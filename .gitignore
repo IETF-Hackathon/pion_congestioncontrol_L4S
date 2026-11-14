@@ -6,3 +6,10 @@
 .env
 .env.*
 !.env.example
+/media/*.ivf
+/go.work
+/go.work.sum
+/pion-l4s
+/testbed/local.json
+__pycache__/
+*.pyc

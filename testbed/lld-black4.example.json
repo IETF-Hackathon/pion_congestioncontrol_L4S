@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "bottleneck": {
+    "name": "lld-black4",
+    "management_ipv4": "192.168.1.75",
+    "dashboard_url": "http://lld-black4.local/",
+    "diagram_capacity_mbps": 20,
+    "diagram_added_delay_ms_each_direction": 10,
+    "operator_path_notes": "Pending: confirm physical ports, active qdisc mode, bandwidth and delay with the operator."
+  },
+  "receiver": {
+    "interface": "REPLACE_WITH_LAPTOP_ETHERNET_INTERFACE",
+    "ipv4": "REPLACE_WITH_ASSIGNED_LAPTOP_IP",
+    "signaling_port": 8080,
+    "udp_port_min": 50000,
+    "udp_port_max": 50100
+  },
+  "sender": {
+    "interface": "REPLACE_WITH_SERVER_ETHERNET_INTERFACE",
+    "ipv4": "REPLACE_WITH_ASSIGNED_SERVER_IP",
+    "udp_port_min": 50000,
+    "udp_port_max": 50100
+  },
+  "controller": "gcc",
+  "feedback": "ccfb",
+  "duration_seconds": 60,
+  "initial_bitrate_bps": 1000000,
+  "video": "media/sample.ivf"
+}

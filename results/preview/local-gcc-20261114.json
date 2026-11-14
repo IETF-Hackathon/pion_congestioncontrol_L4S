@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "title": "Local GCC transport preview \u2014 14 November 2026",
+  "display_timezone": "America/Los_Angeles",
+  "scope": "local transport/feedback checks; no physical testbed",
+  "baseline_status": {
+    "local_gcc_transport": "run",
+    "testbed_gcc_baseline": "not_run",
+    "prague": "not_implemented",
+    "gcc_prague_comparison": "not_run"
+  },
+  "runtime": {
+    "go": "go1.27.1",
+    "os": "macOS",
+    "architecture": "arm64",
+    "loopback_interface": "lo0",
+    "peer_ipv4": "127.0.0.1"
+  },
+  "modules": {
+    "webrtc": "github.com/pion/webrtc/v4 v4.2.26",
+    "github.com/pion/ice/v4": {
+      "path": "github.com/altanai/ice/v4",
+      "version": "v4.4.8"
+    },
+    "github.com/pion/interceptor": {
+      "path": "github.com/altanai/interceptor",
+      "version": "v0.1.51"
+    }
+  },
+  "source": {
+    "format": "VP8 IVF",
+    "generator": "FFmpeg 9.0.2 / libvpx",
+    "width": 640,
+    "height": 360,
+    "fps": 30,
+    "clip_seconds": 10,
+    "nominal_encoder_bitrate_bps": 500000,
+    "rate_adaptation": false,
+    "clip_sha256": "20e9befd853d092b4bccc6658f10d8104a8221e8a729b66eb2d3442f1749e77a",
+    "archived_clip": "results/raw/local-gcc-20261114/source.ivf"
+  },
+  "binary_sha256": "4b049b23ebd123a0e3a947214a843ea51cfb88d31648075d110acbfcd901c9f5",
+  "source_files_sha256": {
+    "cmd/pion-l4s/main.go": "1f67fea07a30cd8e9bbf65ada0f27441fd7455d0508c5aad18bacc07aacd9484",
+    "go.mod": "ed8c425d6ce9f2e3c7e84b7550baf658cc11b8e05d5d164ae6a05449cc744ebe",
+    "go.sum": "0c9a2ce3eae75db7534eb00b78781265a1b522f781e6aa4940d7d5e3c6d0a38d"
+  },
+  "notes": [
+    "Historical session runs; no media run was rerun to create this preview.",
+    "Counter values are last logged snapshots, not final process totals.",
+    "Receiver and sender samples have independent timestamps.",
+    "Fixed low-rate source and no shaped bottleneck: not a congestion-performance benchmark.",
+    "GCC targets are pacing/controller targets, not encoder rates or measured link capacity.",
+    "Null POC metrics are unavailable, not zero."
+  ],
+  "runs": [
+    {
+      "id": "local-gcc-ccfb-20261114",
+      "controller": "gcc",
+      "feedback": "ccfb",
+      "started_at": "2026-11-14T15:00:40.189293-08:00",
+      "sender_process_limit_seconds": 5,
+      "scope": "single_mac_loopback_transport_check",
+      "status": "media_and_feedback_observed",
+      "last_logged_receiver_packets": 331,
+      "last_logged_receiver_payload_bytes": 307065,
+      "last_logged_congestion_feedback_reports": 39,
+      "last_logged_gcc_target_bps": 1444751,
+      "payload_mbps_sample_range": [
+        0.4598235208638912,
+        0.5153601932600725
+      ],
+      "receiver_samples": [
+        {
+          "time": "2026-11-14T15:00:41.120231-08:00",
+          "packets": 61,
+          "payload_mbps": 0.4598235208638912
+        },
+        {
+          "time": "2026-11-14T15:00:42.120246-08:00",
+          "packets": 132,
+          "payload_mbps": 0.5153601932600725
+        },
+        {
+          "time": "2026-11-14T15:00:43.12013-08:00",
+          "packets": 199,
+          "payload_mbps": 0.4930002672061448
+        },
+        {
+          "time": "2026-11-14T15:00:44.120207-08:00",
+          "packets": 262,
+          "payload_mbps": 0.4834797176478449
+        },
+        {
+          "time": "2026-11-14T15:00:45.120264-08:00",
+          "packets": 331,
+          "payload_mbps": 0.5048561898259274
+        }
+      ],
+      "sender_samples": [
+        {
+          "time": "2026-11-14T15:00:41.209155-08:00",
+          "gcc_target_bps": 1148139,
+          "feedback_reports": 9
+        },
+        {
+          "time": "2026-11-14T15:00:42.210315-08:00",
+          "gcc_target_bps": 1239603,
+          "feedback_reports": 19
+        },
+        {
+          "time": "2026-11-14T15:00:43.209342-08:00",
+          "gcc_target_bps": 1327992,
+          "feedback_reports": 29
+        },
+        {
+          "time": "2026-11-14T15:00:44.209139-08:00",
+          "gcc_target_bps": 1444751,
+          "feedback_reports": 39
+        }
+      ],
+      "selected_ice_pairs": {
+        "receiver": {
+          "time": "2026-11-14T15:00:40.209252-08:00",
+          "level": "INFO",
+          "msg": "selected ICE pair",
+          "role": "receiver",
+          "local": "udp4 host 127.0.0.1:51013 (resolved: 127.0.0.1:51013)",
+          "remote": "udp4 host 127.0.0.1:51117 (resolved: 127.0.0.1:51117)"
+        },
+        "sender": {
+          "time": "2026-11-14T15:00:40.20912-08:00",
+          "level": "INFO",
+          "msg": "selected ICE pair",
+          "role": "sender",
+          "local": "udp4 host 127.0.0.1:51117 (resolved: 127.0.0.1:51117)",
+          "remote": "udp4 host 127.0.0.1:51013 (resolved: 127.0.0.1:51013)"
+        }
+      },
+      "evidence": {
+        "receiver": {
+          "path": "results/raw/local-gcc-20261114/ccfb/receiver.jsonl",
+          "sha256": "6c532aedd2947ea8364e1935600366b1a9350ec77820abbdce7565652dae84fd"
+        },
+        "sender": {
+          "path": "results/raw/local-gcc-20261114/ccfb/sender.jsonl",
+          "sha256": "b79e703ff0f601ff377a9e851db3e8fc51cbd2ea8977580262c3a5f2d441b16f"
+        }
+      },
+      "poc_metrics": {
+        "queue_delay_ms": null,
+        "rtt_variation_ms": null,
+        "ce_count": null,
+        "validated_loss_percent": null,
+        "deduplicated_goodput_mbps": null,
+        "encoder_target_bps": null
+      }
+    },
+    {
+      "id": "local-gcc-twcc-20261114",
+      "controller": "gcc",
+      "feedback": "twcc",
+      "started_at": "2026-11-14T15:00:45.339166-08:00",
+      "sender_process_limit_seconds": 5,
+      "scope": "single_mac_loopback_transport_check",
+      "status": "media_and_feedback_observed",
+      "last_logged_receiver_packets": 327,
+      "last_logged_receiver_payload_bytes": 304201,
+      "last_logged_congestion_feedback_reports": 39,
+      "last_logged_gcc_target_bps": 1444527,
+      "payload_mbps_sample_range": [
+        0.4403446239683322,
+        0.5152025405287767
+      ],
+      "receiver_samples": [
+        {
+          "time": "2026-11-14T15:00:46.217693-08:00",
+          "packets": 58,
+          "payload_mbps": 0.4403446239683322
+        },
+        {
+          "time": "2026-11-14T15:00:47.217894-08:00",
+          "packets": 125,
+          "payload_mbps": 0.4790175931396917
+        },
+        {
+          "time": "2026-11-14T15:00:48.217913-08:00",
+          "packets": 192,
+          "payload_mbps": 0.5001723737502903
+        },
+        {
+          "time": "2026-11-14T15:00:49.217932-08:00",
+          "packets": 260,
+          "payload_mbps": 0.5152025405287767
+        },
+        {
+          "time": "2026-11-14T15:00:50.217906-08:00",
+          "packets": 327,
+          "payload_mbps": 0.49887237415428065
+        }
+      ],
+      "sender_samples": [
+        {
+          "time": "2026-11-14T15:00:46.348153-08:00",
+          "gcc_target_bps": 1131037,
+          "feedback_reports": 9
+        },
+        {
+          "time": "2026-11-14T15:00:47.3482-08:00",
+          "gcc_target_bps": 1229910,
+          "feedback_reports": 19
+        },
+        {
+          "time": "2026-11-14T15:00:48.348232-08:00",
+          "gcc_target_bps": 1338045,
+          "feedback_reports": 29
+        },
+        {
+          "time": "2026-11-14T15:00:49.34821-08:00",
+          "gcc_target_bps": 1444527,
+          "feedback_reports": 39
+        }
+      ],
+      "selected_ice_pairs": {
+        "receiver": {
+          "time": "2026-11-14T15:00:45.347681-08:00",
+          "level": "INFO",
+          "msg": "selected ICE pair",
+          "role": "receiver",
+          "local": "udp4 host 127.0.0.1:51011 (resolved: 127.0.0.1:51011)",
+          "remote": "udp4 host 127.0.0.1:51104 (resolved: 127.0.0.1:51104)"
+        },
+        "sender": {
+          "time": "2026-11-14T15:00:45.347598-08:00",
+          "level": "INFO",
+          "msg": "selected ICE pair",
+          "role": "sender",
+          "local": "udp4 host 127.0.0.1:51104 (resolved: 127.0.0.1:51104)",
+          "remote": "udp4 host 127.0.0.1:51011 (resolved: 127.0.0.1:51011)"
+        }
+      },
+      "evidence": {
+        "receiver": {
+          "path": "results/raw/local-gcc-20261114/twcc/receiver.jsonl",
+          "sha256": "323f83ffb0ed6e850937a77e52903e48f8305a2c9a32bb5783dae1f57654c690"
+        },
+        "sender": {
+          "path": "results/raw/local-gcc-20261114/twcc/sender.jsonl",
+          "sha256": "cf3dfd58a9643128171fb43e80e0dc50c8fd5a513c09c9756520e640b867b1d8"
+        }
+      },
+      "poc_metrics": {
+        "queue_delay_ms": null,
+        "rtt_variation_ms": null,
+        "ce_count": null,
+        "validated_loss_percent": null,
+        "deduplicated_goodput_mbps": null,
+        "encoder_target_bps": null
+      }
+    }
+  ]
+}
