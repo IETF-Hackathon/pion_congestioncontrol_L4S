@@ -1,0 +1,8 @@
+.DS_Store
+/bin/
+/results/raw/
+*.pcap
+*.pcapng
+.env
+.env.*
+!.env.example
