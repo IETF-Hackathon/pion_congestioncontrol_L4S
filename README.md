@@ -16,7 +16,9 @@ Compare Prague through DualPI2 against an explicitly configured Pion GCC baselin
 
 Use Pion for both sender and receiver in the initial POC. This gives control over the sender's congestion controller, the receiver's ECN observation and RFC 8888 feedback, and logging at both ends.
 
-Treat the existing WebRTC client labelled `.212` in the network diagram as a later interoperability target. Confirm its application, negotiated feedback, and ECN capability before using it as the receiver for a Prague experiment. The diagram alone does not establish those capabilities. Use an organizer-assigned host and address for the Pion receiver.
+<img width="681" height="266" alt="image" src="https://github.com/user-attachments/assets/6622c942-f49d-425c-8fa6-fbf7aec0ba7a" />
+
+Confirm its application, negotiated feedback, and ECN capability before using it as the receiver for a Prague experiment. The diagram alone does not establish those capabilities. Use an organizer-assigned host and address for the Pion receiver.
 
 ## Connect the peers to the test network
 
