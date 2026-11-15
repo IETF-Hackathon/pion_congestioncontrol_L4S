@@ -34,6 +34,7 @@ The build selects [`altanai/interceptor`](https://github.com/altanai/interceptor
 
 For a separate sender laptop, follow the [complete two-laptop procedure](docs/pion-l4s-interop/separate-laptop.md),
 including copying the current implementation, sharing config and verifying CE feedback.
+The [annotated topology](docs/images/pion-testbed-placement.png) shows exactly where both programs run and where their Ethernet cables connect.
 
 To create your own Linux development server on this Mac, use
 [`scripts/server.py`](scripts/server.py); see [server setup and placement](docs/pion-l4s-interop/own-server.md).
