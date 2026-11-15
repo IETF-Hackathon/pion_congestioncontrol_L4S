@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Single offline project document: proposal, testbed scripts, topology overlay,
-     experiment plan, and blank results awaiting measured lab evidence. -->
+     verified local-run preview, and blank results awaiting measured lab evidence. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -113,6 +113,19 @@
     .event { margin: 22px 0 0; font-size: .9rem; color: var(--muted); }
     .results-table { min-width: 1000px; }
     .results-table td { height: 60px; }
+    .preview-status { margin-bottom: 18px; }
+    .preview-status .card { border-top: 4px solid var(--teal); }
+    .preview-status .pending { border-top-color: #d1ae69; }
+    .preview-label { display: inline-block; margin-bottom: 8px; padding: 3px 10px; border-radius: 999px; color: var(--teal-dark); background: var(--mint); font-size: .78rem; font-weight: 750; }
+    .pending .preview-label { color: #715323; background: var(--sand); }
+    .preview-status h3 { margin-top: 3px; }
+    #preview .card { min-width: 0; }
+    #preview pre { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: #f6f8fa; overflow-x: auto; font-size: .82rem; line-height: 1.6; }
+    #preview details { margin-top: 16px; }
+    #preview summary { cursor: pointer; font-weight: 750; color: var(--teal-dark); }
+    .preview-run-table { min-width: 980px; }
+    .preview-run-table small { display: block; margin-top: 4px; font-weight: 400; }
+    .preview-topology { color: var(--ink); white-space: pre; }
     a:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; }
     @media print {
       body { background: #fff; font-size: 10pt; }
@@ -177,8 +190,10 @@
           <a href="#problem">Problem</a>
           <a href="#cc">Congestion control</a>
           <a href="#design">Architecture</a>
+          <a href="#prague-feedback">Prague feedback</a>
           <a href="#test-network">Test network</a>
           <a href="#code">Run the code</a>
+          <a href="#preview">Run preview</a>
           <a href="#work">Plan</a>
           <a href="#done">What I did</a>
           <a href="#tests">Experiments</a>
@@ -198,7 +213,7 @@
           <span class="badge">Pion WebRTC</span><span class="badge">UDP-Prague</span><span class="badge">RFC 8888 CCFB</span><span class="badge">DualPI2</span>
         </div>
         <div class="summary" id="objective"><strong>POC objective:</strong> Compare Prague through DualPI2 against an explicitly configured Pion GCC baseline, using the same bottleneck and media source. Measure queue delay, RTT variation, CE counts, loss, goodput, and encoder target rate.</div>
-        <p class="event">14–15 November 2026 · San Francisco, CA · GCC starter available · L4S integration and measurements pending</p>
+        <p class="event">14–15 November 2026 · San Francisco, CA · Local GCC checks complete · Testbed baseline and Prague comparison pending</p>
       </div>
 
       <section id="problem">
@@ -226,7 +241,7 @@
           <article class="panel card">
             <span class="number">02</span><h3>Optional Pion GCC</h3>
             <p><code>pion/interceptor</code> provides an optional Google Congestion Control implementation, including bandwidth-estimation and pacing components. It must be explicitly wired into the application; it is not installed as the default Pion sender controller.</p>
-            <p style="margin-top:12px"><strong>Performance meaning:</strong> GCC estimates a target rate from transport feedback and can pace packets. Pion’s <a href="https://github.com/pion/bwe-test">BWE test runner</a> provides RFC 8867-style interactive-media scenarios. Actual delay, loss, and throughput depend on the path, configuration, pacer, and media source; this POC has no measured GCC results yet.</p>
+            <p style="margin-top:12px"><strong>Performance meaning:</strong> GCC estimates a target rate from transport feedback and can pace packets. Pion’s <a href="https://github.com/pion/bwe-test">BWE test runner</a> provides RFC 8867-style interactive-media scenarios. Actual delay, loss, and throughput depend on the path, configuration, pacer, and media source; this POC has no testbed GCC performance measurements yet. The <a href="#preview">run preview</a> contains the completed local transport checks.</p>
           </article>
         </div>
         <p class="source-note">Code references: <a href="https://github.com/pion/webrtc/blob/main/interceptor.go">Pion default interceptor registration</a> and <a href="https://github.com/pion/interceptor/tree/main/pkg/gcc">optional GCC estimator and pacer</a>.</p>
@@ -310,13 +325,46 @@
           <article class="panel card"><span class="number">TODO 5</span><h3>Prove the closed loop</h3><p>Use captures to verify ECT(1) before DualPI2 and CE after it; correlate receiver reports with Prague's state, pacer output, and encoder target. Test loss, reordering, and CE bleaching.</p></article>
           <article class="panel card"><span class="number">TODO 6</span><h3>Run matched comparisons</h3><p>Compare explicitly configured GCC and Prague with identical media, capacity, delay, duration, and cross traffic. Record goodput, loss, CE, RTT, queue delay, and target rate.</p></article>
         </div>
-        <p class="source-note">Reference implementation: <a href="https://github.com/L4steam/udp_prague">UDP-Prague</a> (<code>udp_prague_sender.cpp</code>, <code>udp_prague_receiver.cpp</code>, <code>pkt_format.h</code>, and <code>prague_cc.h</code>). This table describes the planned bridge; no Pion adapter or end-to-end ECN path has been implemented yet.</p>
+        <p class="source-note">Reference implementation: <a href="https://github.com/L4steam/udp_prague">UDP-Prague</a> (<code>udp_prague_sender.cpp</code>, <code>udp_prague_receiver.cpp</code>, <code>pkt_format.h</code>, and <code>prague_cc.h</code>). The experimental bridge now includes Prague pacing and local ECN-aware feedback. Physical testbed validation and source adaptation remain pending; see <a href="docs/pion-l4s-interop/prague.md">implementation status</a>.</p>
+      </section>
+
+      <section id="prague-feedback">
+        <div class="section-title">
+          <div><div class="eyebrow">03a · Prague feedback loop</div><h2>Turn ECN markings into pacing and rate changes</h2></div>
+          <p class="intro">Prague treats ECN as a measured congestion level, not as an instruction to halve the rate for every marked packet. Accurate receiver feedback closes the loop between the L4S bottleneck and the sender.</p>
+        </div>
+        <div class="panel body-copy">
+          <pre class="preview-topology">Prague sender             DualPI2 / L4S queue             Pion receiver
+ECT(1) packet  ─────────► selected packets become CE ───► observe outer-IP CE
+      ◄──────── RFC 8888 feedback: received / CE / lost ────────────────┘
+update window, pacing rate, burst allowance, and media target</pre>
+          <p>The sender marks outgoing outer IP packets <strong>ECT(1)</strong>. When its shallow L4S queue begins to build, DualPI2 changes selected packets from ECT(1) to <strong>CE</strong> (Congestion Experienced) instead of waiting for packet loss. The receiver must read the ECN field from each received ICE/UDP packet, associate it with the corresponding RTP packet, and return sufficiently accurate congestion feedback.</p>
+          <p>For RTP over UDP, both endpoints signal ECN support and use RTCP RFC 8888 congestion-control feedback. Reporting only that “some congestion occurred” is insufficient: Prague needs the <em>extent</em> of CE marking so its response scales with the amount of congestion.</p>
+        </div>
+        <div class="grid-3 story-grid" style="margin-top:16px">
+          <article class="panel card"><span class="number">1</span><h3>Measure the marked fraction</h3><p>From newly reported traffic, calculate the proportion marked CE:</p><pre><code>mark fraction = CE-marked traffic
+                ─────────────────
+                acknowledged traffic</code></pre><p>Implementations must handle cumulative counters, duplicates, reordering, loss, and counter wrap without counting a packet twice.</p></article>
+          <article class="panel card"><span class="number">2</span><h3>Smooth the signal</h3><p>Prague maintains a moving estimate conventionally called <code>alpha</code>:</p><pre><code>alpha = (1 − g) × old alpha
+        + g × mark fraction</code></pre><p>This filters individual marks while retaining the current level of persistent congestion.</p></article>
+          <article class="panel card"><span class="number">3</span><h3>Reduce proportionally</h3><p>On CE feedback, Prague reduces its congestion window approximately as:</p><pre><code>new window = old window
+             × (1 − alpha/2)</code></pre><p>The controller normally makes no more than one ECN-driven reduction per RTT, while continuing to update its congestion estimate.</p></article>
+        </div>
+        <div class="callout"><strong>Example:</strong> if the smoothed marking level is 10%, Prague reduces the window by about 5%. Sparse marking causes a gentle response; persistent marking causes a stronger response. This fine-grained reaction is what allows Prague to keep the L4S queue shallow without repeatedly applying a classic 50% backoff.</div>
+        <div class="panel body-copy" style="margin-top:16px">
+          <h3>How the controller output reaches WebRTC</h3>
+          <p>After processing feedback, UDP-Prague exposes a pacing rate, packet window, permitted burst size, and packet size. A real-time integration can also derive a source or next-frame budget. The Pion adapter must apply these outputs to the RTP pacer and rate-controllable media source while ensuring GCC is not controlling the same stream.</p>
+          <p>Packet loss remains a separate, stronger safety signal with Reno- or CUBIC-compatible behavior. If the receiver detects ECN bleaching or invalid ECN behavior, it reports an L4S error so the sender can stop relying on ECT(1) and fall back safely.</p>
+          <h3>What is still missing here</h3>
+          <p>The experimental Prague mode now marks SRTP data ECT(1), reads socket ECN metadata, returns ECN-aware RFC 8888 reports, and feeds the pinned <code>PragueCC</code> core. A synchronous pacer applies its rate and byte-window outputs. Local checks pass; physical DualPI2 validation, adaptive media encoding and complete experiment metrics remain pending.</p>
+        </div>
+        <p class="source-note">Technical references: <a href="https://www.rfc-editor.org/rfc/rfc9331.html">RFC 9331 L4S ECN requirements</a>, the <a href="https://datatracker.ietf.org/doc/html/draft-briscoe-iccrg-prague-congestion-control-04">Prague congestion-control specification</a>, and the <a href="https://github.com/L4steam/udp_prague">UDP-Prague reference implementation</a>.</p>
       </section>
 
       <section id="test-network">
         <div class="section-title">
-          <div><div class="eyebrow">03a · Test-network integration</div><h2>My experiment on the IETF 127 network</h2></div>
-          <p class="intro">My laptop runs the Pion receiver, HTTP signaling, and recorded logs on the dedicated Altanai client branch behind lld-black4. A separate Pion host at the servers switch sends the media. The scripts support the GCC transport run now; Prague and ECN remain pending.</p>
+          <div><div class="eyebrow">03b · Test-network integration</div><h2>My experiment on the IETF 127 network</h2></div>
+          <p class="intro">My laptop runs the Pion receiver, HTTP signaling, and recorded logs on the dedicated Altanai client branch behind lld-black4. A separate Pion host at the servers switch sends the media. The scripts support GCC and experimental Prague/CCFB with socket ECN. Physical testbed measurements remain pending.</p>
         </div>
         <figure class="panel network-figure">
           <div class="network-toolbar">
@@ -398,7 +446,7 @@ bash scripts/make-media.sh
 python3 scripts/testbed.py doctor --role sender
 python3 scripts/testbed.py run --role sender --run-id gcc-01</code></pre>
           <p>The helper checks the local link, IP ownership and route; the sender also checks the receiver's feedback setting and unused session. It verifies both compiled Altanai fork replacements and saves logs, config, hashes and build details under <code>results/raw/</code>. TCP 8080 on the receiver and UDP 50000–50100 on both peers are the default selected ports.</p>
-          <p><strong>Measurement boundary:</strong> current logs provide RTP payload counters, GCC targets and feedback counts. CE and encoder target are unavailable, and the fixed 500 kbps clip does not saturate a 20 Mbps link. Queue delay, RTT variation, loss and deduplicated goodput need additional instrumentation. The six-metric experiment and results remain pending.</p>
+          <p><strong>Measurement boundary:</strong> current logs provide RTP payload counters, GCC targets and feedback counts. CE counters are available in Prague mode; encoder targets are unavailable, and the fixed 500 kbps clip does not saturate a 20 Mbps link. Queue delay, RTT variation, loss and deduplicated goodput need additional instrumentation. The six-metric experiment and results remain pending.</p>
           <p>Read the complete <a href="docs/pion-l4s-interop/testbed.md">testbed run guide</a> for operator checks, artifacts, matched runs and current limits.</p>
         </div>
         <p class="source-note">Source: the latest user-supplied IETF 127 testbed diagram. Management dashboard: <a href="http://lld-black4.local/">lld-black4.local</a>. Monitor9 and monitor10 are separate test paths.</p>
@@ -413,9 +461,80 @@ python3 scripts/testbed.py run --role sender --run-id gcc-01</code></pre>
           <pre style="overflow:auto"><code>bash scripts/build.sh
 ./bin/pion-l4s --help</code></pre>
           <p>Read the <a href="docs/pion-l4s-interop/build-system.md">build and fork guide</a> for direct endpoint commands and local library workspaces, or use the <a href="docs/pion-l4s-interop/testbed.md">scripted testbed workflow</a>. The build resolves <code>altanai/interceptor v0.1.51</code> and <code>altanai/ice/v4 v4.4.8</code>.</p>
-          <p><strong>Current scope:</strong> direct UDP host candidates, HTTP signaling, real VP8 packet transfer, GCC pacing, and basic logs. Prague, outer-IP ECN support, encoder adaptation, and complete POC metrics remain to be implemented. The starter rejects <code>--controller prague</code> rather than running a mislabeled GCC baseline.</p>
-          <p><strong>Validation:</strong> compilation, unit and race checks, vet, and two-peer loopback checks for both feedback formats. No lab or L4S performance result is claimed.</p>
+          <p><strong>Current scope:</strong> direct UDP host candidates, HTTP signaling, real VP8 packet transfer, GCC pacing, and basic logs. Experimental <code>--controller prague --feedback ccfb</code> now adds the reference controller and socket ECN on both peers. Encoder adaptation, complete POC metrics and physical testbed validation remain pending.</p>
+          <p><strong>Validation:</strong> compilation, unit and race checks, vet, and two-peer loopback checks for both feedback formats. See the <a href="#preview">recorded run preview</a> for observed counters, the technology used, and the next testbed commands.</p>
         </div>
+      </section>
+
+      <section id="preview" aria-labelledby="preview-title">
+        <div class="section-title">
+          <div><div class="eyebrow">Results so far · Recorded preview</div><h2 id="preview-title">GCC ran locally. The lab baseline is next.</h2></div>
+          <p class="intro">Two Pion processes exchanged VP8 media and congestion feedback on one Mac. These short checks confirm that the GCC transport works; we have not measured its performance through the IETF bottleneck.</p>
+        </div>
+        <div class="grid-3 preview-status">
+          <article class="panel card"><span class="preview-label">Verified locally</span><h3>GCC + CCFB / TWCC</h3><p>Both feedback modes transferred RTP packets and returned RTCP congestion feedback over <code>127.0.0.1</code> on <code>lo0</code>.</p></article>
+          <article class="panel card pending"><span class="preview-label">Not run on the testbed</span><h3>GCC through lld-black4</h3><p>No Ethernet or DualPI2 baseline measurements have been collected. This is the next transport run using the two-host scripts.</p></article>
+          <article class="panel card pending"><span class="preview-label">Implementation pending</span><h3>Prague vs GCC</h3><p>Prague, ECN observation/marking and adaptive encoding are still needed before the intended congestion-performance comparison.</p></article>
+        </div>
+        <div class="panel table-wrap">
+          <table class="preview-run-table" aria-label="Observed local GCC transport snapshots, not testbed benchmarks">
+            <thead><tr><th scope="col">Local run</th><th scope="col">Sender time limit</th><th scope="col">RTP packets<br>last logged</th><th scope="col">Feedback reports<br>last logged</th><th scope="col">Sampled RTP payload rate</th><th scope="col">GCC target<br>last logged</th></tr></thead>
+            <tbody>
+              <tr data-run-id="local-gcc-ccfb-20261114"><td>GCC + RFC 8888 CCFB<small><time datetime="2026-11-14T15:00:40.189293-08:00">14 Nov 2026 · 15:00:40 PST</time></small></td><td>5 s, including setup</td><td data-metric="packets">331</td><td data-metric="feedback-reports">39</td><td data-metric="payload-range">0.460–0.515 Mb/s</td><td data-metric="gcc-target">1.445 Mb/s</td></tr>
+              <tr data-run-id="local-gcc-twcc-20261114"><td>GCC + TWCC<small><time datetime="2026-11-14T15:00:45.339166-08:00">14 Nov 2026 · 15:00:45 PST</time></small></td><td>5 s, including setup</td><td data-metric="packets">327</td><td data-metric="feedback-reports">39</td><td data-metric="payload-range">0.440–0.515 Mb/s</td><td data-metric="gcc-target">1.445 Mb/s</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="source-note">Tables scroll horizontally on narrow screens. Source: the saved session logs, summarized in <a href="results/preview/local-gcc-20261114.json">local-gcc-20261114.json</a>. Raw logs are retained <a href="results/raw/local-gcc-20261114/ccfb/receiver.jsonl">locally</a> under <code>results/raw/local-gcc-20261114/</code> and ignored by Git. Counters are the last periodic samples, not final process totals. Each rate range covers the recorded one-second samples, including startup. The sender and receiver sample clocks are independent.</p>
+        <div class="callout"><strong>What these numbers mean:</strong> the configured source is approximately 0.5 Mb/s and the controller target starts at 1 Mb/s. The later 1.445 Mb/s value is GCC’s target, not the encoder rate, measured goodput, or a capacity estimate validated by this experiment. There was no shaped bottleneck or competing traffic in these local checks. Differences between the two rows do not establish which feedback format performs better.</div>
+        <details class="panel body-copy" open>
+          <summary>What technology did these runs use?</summary>
+          <div class="table-wrap" style="margin-top:14px">
+            <table aria-label="Technology and versions used for the local GCC checks">
+              <thead><tr><th scope="col">Layer</th><th scope="col">Technology used</th><th scope="col">Role</th></tr></thead>
+              <tbody>
+                <tr><td>Runtime</td><td>Go 1.27.1 · macOS arm64</td><td>Two local endpoint processes; Bash and Python provide build and testbed helpers. The project requires Go 1.24 or newer.</td></tr>
+                <tr><td>WebRTC</td><td>Pion WebRTC <code>v4.2.26</code></td><td>PeerConnection, RTP/RTCP, ICE, DTLS/SRTP and HTTP SDP offer/answer signaling.</td></tr>
+                <tr><td>Congestion control</td><td><a href="https://github.com/altanai/interceptor/tree/v0.1.51">altanai/interceptor v0.1.51</a></td><td>Explicit GCC estimator and pacer. CCFB and TWCC are two feedback modes for that same controller.</td></tr>
+                <tr><td>UDP / ICE</td><td><a href="https://github.com/altanai/ice/tree/v4.4.8">altanai/ice v4.4.8</a></td><td>Direct IPv4 UDP host candidates on <code>lo0</code>. These pinned fork tags contain existing Pion code; no ECN implementation was added by forking them.</td></tr>
+                <tr><td>Media source</td><td>FFmpeg 9.0.2 + libvpx · VP8 IVF</td><td>640 × 360, 30 fps, a 10-second looping clip encoded at a nominal 500 kb/s. The source does not adapt to GCC’s target.</td></tr>
+                <tr><td>Feedback</td><td>RTCP RFC 8888 CCFB or TWCC</td><td>One matching feedback mode at both ends. The logs show real congestion-feedback reports reaching the sender.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+        <details class="panel body-copy" open>
+          <summary>How to run the GCC transport on the testbed now</summary>
+          <pre class="preview-topology">Separate Pion sender → servers switch → lld-black4 → my laptop receiver
+                     ← RTCP feedback over the same physical branch ←</pre>
+          <ol>
+            <li><strong>Arrange the two hosts.</strong> Attach the laptop to the client side of <code>lld-black4</code> and a separate sender host to the servers switch. Get both host IP addresses and Ethernet interface names from the operator. <code>192.168.1.75</code> is the monitor’s management IP, not either peer.</li>
+            <li><strong>Put the same source and configuration on both hosts.</strong> These implementation changes were local when this snapshot was recorded. A fresh clone will not include unpushed edits; transfer the complete current source or publish the branch before checking it out on the sender. Build on each host so the server gets a binary for its own OS and architecture.</li>
+            <li><strong>Configure the lab run.</strong> Copy the example once, edit both endpoint sections, and use the same edited config on both hosts. Keep <code>controller: gcc</code> and <code>feedback: ccfb</code> for the first run. The default sender limit is 60 seconds, including setup.</li>
+          </ol>
+          <pre><code># In the laptop checkout
+cd /Users/albisht/ietf/pion-l4s-interop
+cp -n testbed/lld-black4.example.json testbed/local.json
+# Edit testbed/local.json: assigned IPs and actual Ethernet interface names.
+# Place the same config and source tree on the separate sender host.
+bash scripts/build.sh
+python3 scripts/testbed.py plan</code></pre>
+          <div class="grid-3 story-grid" style="margin-top:16px">
+            <article class="panel card"><span class="number">1</span><h3>Laptop: start the receiver first</h3><pre><code>python3 scripts/testbed.py doctor --role receiver
+python3 scripts/testbed.py run \
+  --role receiver --run-id gcc-lab-001</code></pre><p>Leave this process running. It serves signaling/readiness and receives RTP. Stop it with Ctrl+C after the sender finishes.</p></article>
+            <article class="panel card"><span class="number">2</span><h3>Server-side host: start the sender</h3><pre><code># From this project's checkout on the server
+bash scripts/build.sh
+bash scripts/make-media.sh
+python3 scripts/testbed.py doctor --role sender
+python3 scripts/testbed.py run \
+  --role sender --run-id gcc-lab-001</code></pre><p>The sender checks receiver readiness, sends the VP8 source, and saves its own logs. Restart the receiver and choose a new run ID for each repeat.</p></article>
+          </div>
+          <p style="margin-top:16px"><strong>Check the actual path:</strong> allow the selected signaling TCP port (default 8080 on the receiver) and ICE UDP range (default 50000–50100 on both hosts). Check both selected ICE addresses in the logs, then correlate the flow with operator captures/counters on <code>lld-black4</code>. The diagram’s 20 Mb/s and 10 ms per direction must be confirmed with the operator; the script does not set them or prove a transparent bridge path from an IP route.</p>
+          <p><strong>Collect:</strong> <code>results/raw/gcc-lab-001/receiver/</code> on the laptop and <code>results/raw/gcc-lab-001/sender/</code> on the server. Each contains endpoint JSONL, run metadata and build information. This preview is a saved snapshot and does not update automatically from new runs.</p>
+          <p><strong>Scope of the next run:</strong> the 500 kb/s source is suitable for proving transport across the lab, but will not saturate a 20 Mb/s link. Experimental Prague and socket ECN now pass local checks. Source adaptation, complete metrics and physical DualPI2 validation are still needed before drawing congestion-performance conclusions. See the full <a href="docs/pion-l4s-interop/testbed.md">testbed guide</a>.</p>
+        </details>
+        <p class="source-note">Queue delay, RTT variation, CE count, independently validated loss, deduplicated goodput and encoder target have not been measured in these checks. The <a href="#results">experimental results table</a> remains blank. In particular, an unavailable CE count does not mean zero CE marks.</p>
       </section>
 
       <section id="work">
@@ -435,7 +554,7 @@ python3 scripts/testbed.py run --role sender --run-id gcc-01</code></pre>
       <section id="done">
         <div class="section-title">
           <div><div class="eyebrow">05 · What I did</div><h2>Defined the POC and integration plan</h2></div>
-          <p class="intro">The project design and measurement plan now have a runnable Pion GCC sender/receiver starter. Local VP8 transfer and congestion-feedback checks pass; Prague, verified ECN support, source adaptation, and lab experiments remain pending.</p>
+          <p class="intro">The project design and measurement plan now have a runnable Pion GCC sender/receiver starter. Local GCC and Prague VP8 transport checks pass, including socket ECN in Prague mode. Source adaptation and physical lab experiments remain pending.</p>
         </div>
         <div class="panel body-copy">
           <ul>

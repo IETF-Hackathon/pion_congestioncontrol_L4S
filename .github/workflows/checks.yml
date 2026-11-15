@@ -1,0 +1,36 @@
+# Validate the endpoint and offline lab guards without requiring testbed access.
+name: Check Pion testbed starter
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GOWORK: "off"
+      CGO_ENABLED: "1"
+      CGO_CXXFLAGS_ALLOW: "-fwrapv"
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-go@v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Check Go formatting
+        run: test -z "$(gofmt -l cmd/pion-l4s internal/prague)"
+      - name: Test endpoint and check Go diagnostics
+        run: |
+          go test ./...
+          go vet ./...
+          go test -race ./...
+      - name: Check lab helper
+        run: |
+          bash -n scripts/build.sh scripts/make-media.sh
+          python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Build using the pinned forks
+        run: bash scripts/build.sh

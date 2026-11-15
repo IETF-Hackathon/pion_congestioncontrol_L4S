@@ -1,0 +1,79 @@
+{
+  "scope": "local loopback; no physical bottleneck",
+  "controller": "prague",
+  "feedback": "ccfb",
+  "binary_sha256": "a20a8d4c22e6db280d6315682324d0867ae77e1ca17af5c73fda823b50693775",
+  "video_sha256": "20e9befd853d092b4bccc6658f10d8104a8221e8a729b66eb2d3442f1749e77a",
+  "receiver_last_sample": {
+    "time": "2026-11-14T15:49:58.231317-08:00",
+    "level": "INFO",
+    "msg": "receiver metrics",
+    "role": "receiver",
+    "packets": 358,
+    "rtp_payload_bytes": 334114,
+    "rtp_payload_mbps": 0.4579900724810896,
+    "ce_count": 0,
+    "ect1_count": 358,
+    "nonect_count": 0
+  },
+  "sender_last_sample": {
+    "time": "2026-11-14T15:49:57.302698-08:00",
+    "level": "INFO",
+    "msg": "sender metrics",
+    "role": "sender",
+    "controller": "prague",
+    "target_bps": 8640208,
+    "congestion_feedback_reports": 205,
+    "prague": {
+      "algorithm": "udp-prague",
+      "alpha": 0,
+      "ce": 0,
+      "failure": "<nil>",
+      "inflight_bytes": 1575,
+      "lost": 0,
+      "packet_size": 1200,
+      "packet_window": 3,
+      "rate_bps": 8640208,
+      "received": 299,
+      "sent": 301,
+      "srtt_us": 2413
+    },
+    "ce_count": 0,
+    "encoder_target_bps": null
+  },
+  "git_commit": "8086d2ec17309c60e073bbd002d244276cf837f2",
+  "git_status": " M .gitignore\n M CONTRIBUTING.md\n M README.md\n M THIRD_PARTY_NOTICES.md\n M cmd/pion-l4s/main.go\n M cmd/pion-l4s/main_test.go\n M docs/pion-l4s-interop/build-system.md\n M docs/pion-l4s-interop/testbed.md\n M docs/pion-l4s-interop/udp-prague-pion-mapping.md\n M go.mod\n M index.html\n M results/preview/README.md\n M todo/README.md\n?? .github/\n?? cmd/pion-l4s/ecn.go\n?? cmd/pion-l4s/ecn_test.go\n?? cmd/pion-l4s/feedback.go\n?? docs/pion-l4s-interop/prague.md\n?? internal/\n?? scripts/\n",
+  "branch": "feat/prague-cc-testbed",
+  "native_controller_commit": "46986fb95f1fdd17bf6225a0afb35f073eb7b7d9",
+  "physical_testbed_status": "not_run_missing_sender_host",
+  "raw_artifacts": "results/raw/local-20261114T234951766253Z",
+  "checks": {
+    "go_tests": "pass",
+    "go_vet": "pass",
+    "go_race": "pass",
+    "python_runner_tests": "8 passed",
+    "gcc_ccfb_local": "pass",
+    "gcc_twcc_local": "pass"
+  },
+  "source_sha256": {
+    "cmd/pion-l4s/feedback.go": "d3cd33e21b5fd73ced5be7489026ef6a3237fce348ab72ce11f5f30b69a1b9bd",
+    "cmd/pion-l4s/ecn_test.go": "0b3c40e85898c4c2358716cb7d12777a160032a44a3474dbec1e681d1135ef16",
+    "cmd/pion-l4s/ecn.go": "b9a88511028b8ff5ed3299cd59588f29a4a77cd49c9aa40980aaa39fa00992fd",
+    "cmd/pion-l4s/main.go": "446d847a271411ef5096ac2230c00034ff9c2218d4613983c35ea9e24ad862f6",
+    "cmd/pion-l4s/main_test.go": "6b248236a97c01861a26de9c67f42747311ab1cbe2c21e5786ec2a7fc678642e",
+    "internal/prague/controller.go": "94d2b62ce417450482128ff630c75f26e76bb72b3326fd7c1de84776105a517a",
+    "internal/prague/bridge.h": "8299bf33d7d84e926ed5da26af93809a8cc39fbeb18885c045894386f35fefc2",
+    "internal/prague/controller_test.go": "668d49fd73db36d55570a394d01c807c6ba9acd57a8c348f3eb9c8fea892bfcc",
+    "internal/prague/bridge.cc": "f6a8647c0a750ae1c91d51abd4ee12eb1c2979b1161760359300722904572cda",
+    "internal/prague/native/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+    "internal/prague/native/prague_cc.cpp": "defcfd114873349e6da5f95a9ebbe616d984eb63babc013c977ec696362a7249",
+    "internal/prague/native/README.md": "c8c764dd8ce4b917516e2cff8614ae622c15394ff2e737bac0b1711fc6dd523c",
+    "internal/prague/native/prague_cc.h": "6d01da07b6a34b5f6d79a37686535b0984280bca42508383a3ab3c7472827f8a"
+  },
+  "measurement_limits": [
+    "Loopback only; no lld-black4 traversal or DualPI2 CE marking",
+    "Last periodic samples, not final synchronized totals",
+    "Fixed source, no encoder adaptation; controller target is not measured capacity",
+    "Linux socket behavior and full SDP ECN negotiation remain unverified"
+  ]
+}
