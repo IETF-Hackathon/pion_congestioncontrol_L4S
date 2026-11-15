@@ -32,6 +32,11 @@ Maintain `index.html` as the single HTML project document. Keep the network diag
 
 ## Implementation contributions
 
+For Prague changes use `bash scripts/check.sh` and `bash scripts/build.sh`;
+they configure cgo and permit the reference core's `-fwrapv` compiler flag.
+Run `gofmt -w cmd/pion-l4s internal/prague` after Go edits. See
+`docs/pion-l4s-interop/prague.md` for the controller pin and local media check.
+
 State which Pion and controller versions were used, how congestion feedback reaches the controller, and how controller output reaches the source and pacer. A `PragueCC` wrapper and an end-to-end Pion integration are distinct milestones.
 
 For experiment results, record the exact topology, selected ICE candidate pair, qdisc settings, traffic direction, source settings, competing load, measurement interval, and the metric definitions. Check ECN marking and feedback against captures and endpoint logs. Keep raw captures and generated logs in `results/raw/` outside Git; publish a reviewed summary and relevant evidence links.

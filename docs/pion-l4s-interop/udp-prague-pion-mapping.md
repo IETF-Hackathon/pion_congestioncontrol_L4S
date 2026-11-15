@@ -1,5 +1,10 @@
 # Mapping UDP-Prague to the Pion WebRTC endpoints
 
+Implementation update: the experimental Prague adapter, synchronous pacer and
+IPv4 ECN/CCFB path are now implemented. See [Prague implementation](prague.md)
+for the pinned source, current limitations and testbed prerequisites. The
+comparison below explains the architecture; physical lab validation is pending.
+
 ## Short answer
 
 The planned Pion sender and receiver have the same congestion-control roles as
@@ -58,9 +63,8 @@ chosen revisions before wiring counters into `PragueCC`.
 5. Log sequence/rate/RTT/CE/loss values at both endpoints so the adapter can be
    checked against the UDP example's control-loop behavior.
 
-This is an architecture comparison, not evidence that either endpoint or the
-ECN path has been implemented. The Pion project now includes a runnable GCC transport/feedback starter;
-the Prague adapter and full ECN path described here remain planned.
+The current controller and local checks are documented in [prague.md](prague.md).
+Physical testbed validation and media source adaptation remain pending.
 
 ## Sources
 

@@ -1,10 +1,10 @@
 # Pion L4S integration TODOs
 
-These tasks bridge the standalone [UDP-Prague sender/receiver](https://github.com/L4steam/udp_prague) to the planned Pion WebRTC endpoints. The Pion adapter and end-to-end ECN path are not implemented yet. See the [endpoint mapping](../docs/pion-l4s-interop/udp-prague-pion-mapping.md) for the design comparison.
+These tasks bridge the standalone [UDP-Prague sender/receiver](https://github.com/L4steam/udp_prague) to the planned Pion WebRTC endpoints. The experimental Pion adapter and local ECN feedback path are implemented. Physical testbed validation and source adaptation remain pending; see [implementation status](../docs/pion-l4s-interop/prague.md). See the [endpoint mapping](../docs/pion-l4s-interop/udp-prague-pion-mapping.md) for the design comparison.
 
 ## TODO 1 — Pin and inspect the interfaces
 
-- [ ] Select and record the Pion WebRTC, ICE, interceptor, and UDP-Prague revisions.
+- [x] Select and record the Pion WebRTC, ICE, interceptor, and UDP-Prague revisions.
 - [ ] Confirm which RTCP RFC 8888 report format is negotiated and what packet identity, timing, and ECN information it carries.
 - [ ] Map the selected report fields to the exact `PragueCC` API calls and document units, counter semantics, and wrap behavior.
 
@@ -12,27 +12,27 @@ These tasks bridge the standalone [UDP-Prague sender/receiver](https://github.co
 
 ## TODO 2 — Build packet and feedback adapters
 
-- [ ] Track outgoing RTP packet identity, send time, size, and in-flight state for Prague accounting.
-- [ ] Parse incoming receiver feedback and correlate it with the tracked RTP packets.
-- [ ] Handle loss, reordering, duplicate/late reports, and sequence/counter wrap without double-counting.
-- [ ] Translate received, lost, CE, and timing information into the selected Prague API calls.
+- [x] Track outgoing RTP packet identity, send time, size, and in-flight state for Prague accounting.
+- [x] Parse incoming receiver feedback and correlate it with the tracked RTP packets.
+- [x] Handle loss, reordering, duplicate/late reports, and sequence/counter wrap without double-counting.
+- [x] Translate received, lost, CE, and timing information into the selected Prague API calls.
 
 **Done when:** a deterministic trace demonstrates that known packet/feedback inputs produce the expected Prague controller inputs and accounting.
 
 ## TODO 3 — Apply Prague output to media
 
-- [ ] Connect Prague's pacing rate and burst/window limits to Pion's RTP send path.
+- [x] Connect Prague's pacing rate and burst/window limits to Pion's RTP send path.
 - [ ] Connect its target rate to a rate-controllable media source or encoder.
-- [ ] Ensure GCC cannot also control the same stream during a Prague run.
+- [x] Ensure GCC cannot also control the same stream during a Prague run.
 - [ ] Log requested controller rate, applied pacer rate, and encoder/source target for comparison.
 
 **Done when:** logs show the controller's rate changes reaching the pacer and source, with no competing sender controller.
 
 ## TODO 4 — Expose outer-IP ECN
 
-- [ ] Mark outgoing ICE/UDP packets ECT(1) for the Prague run.
-- [ ] Read the ECN field on received outer IP packets and expose CE observations to receiver feedback generation.
-- [ ] Detect and report bleaching or invalid ECN behavior.
+- [x] Mark outgoing ICE/UDP packets ECT(1) for the Prague run.
+- [x] Read the ECN field on received outer IP packets and expose CE observations to receiver feedback generation.
+- [x] Detect and report bleaching or invalid ECN behavior.
 - [ ] Verify the behavior on the selected operating system and exact ICE/UDP path.
 
 **Done when:** packet captures show ECT(1) before the bottleneck, CE after marking, and matching CE information in receiver feedback.

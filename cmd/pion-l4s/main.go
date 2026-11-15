@@ -1,5 +1,5 @@
-// Command pion-l4s runs a lab sender or receiver with GCC, direct IPv4 ICE,
-// HTTP signaling, and transport logs. Prague and IP ECN are not implemented.
+// Command pion-l4s runs a lab sender or receiver with GCC or UDP-Prague,
+// direct IPv4 ICE, HTTP signaling, and ECN-aware RFC 8888 for Prague.
 // Pion API usage follows the MIT-licensed bandwidth-estimation-from-disk example.
 // See THIRD_PARTY_NOTICES.md for source attribution and license text.
 package main
@@ -24,6 +24,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/IETF-Hackathon/pion_congestioncontrol_L4S/internal/prague"
+	"github.com/pion/ice/v4"
 	"github.com/pion/interceptor"
 	"github.com/pion/interceptor/pkg/cc"
 	"github.com/pion/interceptor/pkg/gcc"
@@ -52,11 +54,11 @@ func main() {
 	flag.UintVar(&c.udpMin, "udp-port-min", 0, "first ICE UDP port; set both port flags or leave both zero")
 	flag.UintVar(&c.udpMax, "udp-port-max", 0, "last ICE UDP port, inclusive")
 	flag.StringVar(&c.video, "video", "", "constant-frame-rate VP8 IVF input (sender only)")
-	flag.StringVar(&c.controller, "controller", "gcc", "sender controller; gcc implemented, prague reserved")
+	flag.StringVar(&c.controller, "controller", "gcc", "gcc or prague; use the same value on both peers")
 	flag.StringVar(&c.feedback, "feedback", "ccfb", "ccfb (RFC 8888) or twcc; use the same value at both ends")
 	flag.BoolVar(&c.loopback, "loopback", false, "include loopback ICE candidates for local smoke checks")
 	flag.DurationVar(&c.duration, "duration", 0, "whole-process time limit including setup; zero runs until Ctrl+C")
-	flag.IntVar(&c.initialRate, "initial-bitrate", 1_000_000, "initial GCC target in bits/second")
+	flag.IntVar(&c.initialRate, "initial-bitrate", 1_000_000, "initial controller target in bits/second")
 	flag.Parse()
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -76,8 +78,11 @@ func (c config) validate() error {
 	if c.role != "receiver" && c.role != "sender" {
 		return fmt.Errorf("role must be receiver or sender")
 	}
-	if c.controller != "gcc" {
-		return fmt.Errorf("controller %q is not implemented; Prague requires a controller adapter and verified ECN transport", c.controller)
+	if c.controller != "gcc" && c.controller != "prague" {
+		return fmt.Errorf("controller must be gcc or prague")
+	}
+	if c.controller == "prague" && (c.feedback != "ccfb" || c.localIP == "" || c.iface == "") {
+		return fmt.Errorf("Prague requires --feedback ccfb, --local-ip and --interface on both peers")
 	}
 	if c.feedback != "ccfb" && c.feedback != "twcc" {
 		return fmt.Errorf("feedback must be ccfb or twcc")
@@ -159,9 +164,11 @@ type endpoint struct {
 	feedbacks       atomic.Uint64
 	feedbackReports atomic.Uint64
 	log             *slog.Logger
+	ecn             *ecnSocket
+	mux             ice.UDPMux
 }
 
-// newEndpoint configures Pion codecs, GCC, feedback, ICE filters, and callbacks.
+// newEndpoint configures codecs, the selected controller, feedback and ICE.
 func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 	e := &endpoint{connected: make(chan struct{}), tracks: make(chan *webrtc.TrackRemote, 1), errors: make(chan error, 1), log: log}
 	m, registry := &webrtc.MediaEngine{}, &interceptor.Registry{}
@@ -170,10 +177,13 @@ func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 	}
 	if c.role == "sender" {
 		factory, err := cc.NewInterceptor(func() (cc.BandwidthEstimator, error) {
+			if c.controller == "prague" {
+				return prague.New(c.initialRate)
+			}
 			return gcc.NewSendSideBWE(gcc.SendSideBWEInitialBitrate(c.initialRate))
 		})
 		if err != nil {
-			return nil, fmt.Errorf("create GCC: %w", err)
+			return nil, fmt.Errorf("create controller: %w", err)
 		}
 		factory.OnNewPeerConnection(func(_ string, estimator cc.BandwidthEstimator) { e.estimator = estimator })
 		registry.Add(factory)
@@ -182,7 +192,16 @@ func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 		return nil, fmt.Errorf("configure reports: %w", err)
 	}
 	var err error
-	if c.feedback == "ccfb" {
+	if c.controller == "prague" {
+		e.ecn, err = newECNSocket(c)
+		if err != nil {
+			return nil, err
+		}
+		m.RegisterFeedback(webrtc.RTCPFeedback{Type: webrtc.TypeRTCPFBACK, Parameter: "ccfb"}, webrtc.RTPCodecTypeVideo)
+		if c.role == "receiver" {
+			registry.Add(&ecnFeedbackFactory{socket: e.ecn, report: e.report})
+		}
+	} else if c.feedback == "ccfb" {
 		err = webrtc.ConfigureCongestionControlFeedback(m, registry)
 	} else {
 		err = webrtc.ConfigureTWCCHeaderExtensionSender(m, registry)
@@ -194,6 +213,10 @@ func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 		return nil, fmt.Errorf("configure congestion feedback: %w", err)
 	}
 	settings := webrtc.SettingEngine{}
+	if e.ecn != nil {
+		e.mux = ice.NewUDPMuxDefault(ice.UDPMuxParams{UDPConn: e.ecn})
+		settings.SetICEUDPMux(e.mux)
+	}
 	settings.SetNetworkTypes([]webrtc.NetworkType{webrtc.NetworkTypeUDP4})
 	settings.SetIncludeLoopbackCandidate(c.loopback)
 	if c.iface != "" {
@@ -210,6 +233,12 @@ func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 	api := webrtc.NewAPI(webrtc.WithMediaEngine(m), webrtc.WithInterceptorRegistry(registry), webrtc.WithSettingEngine(settings))
 	e.pc, err = api.NewPeerConnection(webrtc.Configuration{}) // Direct host candidates; no public STUN/TURN.
 	if err != nil {
+		if e.mux != nil {
+			_ = e.mux.Close()
+		}
+		if e.estimator != nil {
+			_ = e.estimator.Close()
+		}
 		return nil, fmt.Errorf("create PeerConnection: %w", err)
 	}
 	var connected sync.Once
@@ -271,8 +300,15 @@ func (e *endpoint) report(err error) {
 
 // close releases Pion transports, unblocks readers, and joins owned goroutines.
 func (e *endpoint) close() {
+	// Wake a paced writer before waiting for Pion's transport shutdown.
+	if controller, ok := e.estimator.(*prague.Controller); ok {
+		_ = controller.Close()
+	}
 	if err := e.pc.Close(); err != nil {
 		e.log.Warn("close PeerConnection", "error", err)
+	}
+	if e.mux != nil {
+		_ = e.mux.Close()
 	}
 	e.wg.Wait() // Closing the PeerConnection unblocks the RTP/RTCP readers.
 }
@@ -293,7 +329,7 @@ func run(ctx context.Context, c config, log *slog.Logger) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	log.Info("capabilities", "controller", c.controller, "feedback", c.feedback, "ecn_observation", "not implemented", "prague", false, "encoder_adaptation", false)
+	log.Info("capabilities", "controller", c.controller, "feedback", c.feedback, "ecn_observation", e.ecn != nil, "prague", c.controller == "prague", "encoder_adaptation", false)
 	log.Info("network settings", "interface", c.iface, "local_ip", c.localIP, "udp_port_min", c.udpMin, "udp_port_max", c.udpMax)
 	if c.role == "receiver" {
 		return receive(ctx, c, e)
@@ -318,7 +354,7 @@ func receive(ctx context.Context, c config, e *endpoint) error {
 		if err := json.NewEncoder(w).Encode(map[string]any{
 			"service": "pion-l4s", "role": "receiver", "feedback": c.feedback,
 			"local_ip": c.localIP, "session_claimed": claimed.Load(),
-			"prague": false, "ecn_observation": false,
+			"controller": c.controller, "prague": c.controller == "prague", "ecn_observation": e.ecn != nil,
 		}); err != nil {
 			e.log.Warn("write health response", "error", err)
 		}
@@ -388,7 +424,13 @@ func receive(ctx context.Context, c config, e *endpoint) error {
 			}()
 		case now := <-ticker.C:
 			bytes := e.payload.Load()
-			e.log.Info("receiver metrics", "packets", e.packets.Load(), "rtp_payload_bytes", bytes, "rtp_payload_mbps", float64(bytes-lastBytes)*8/now.Sub(lastTime).Seconds()/1e6, "ce_count", nil)
+			var ce, ect1, nonect any
+			if e.ecn != nil {
+				ce = e.ecn.ce.Load()
+				ect1 = e.ecn.ect1.Load()
+				nonect = e.ecn.nonect.Load()
+			}
+			e.log.Info("receiver metrics", "packets", e.packets.Load(), "rtp_payload_bytes", bytes, "rtp_payload_mbps", float64(bytes-lastBytes)*8/now.Sub(lastTime).Seconds()/1e6, "ce_count", ce, "ect1_count", ect1, "nonect_count", nonect)
 			lastTime, lastBytes = now, bytes
 		}
 	}
@@ -473,9 +515,14 @@ func signalSender(ctx context.Context, pc *webrtc.PeerConnection, peer string) e
 	return setup.Err()
 }
 
-// send loops a VP8 clip through the GCC pacer, drains RTCP, and reports controller
-// counters. It does not adapt the prerecorded source to the GCC target bitrate.
+// send loops a VP8 clip through the selected pacer, drains RTCP, and logs state.
+// The prerecorded source has no encoder adaptation; Prague writes backpressure it.
 func send(ctx context.Context, c config, e *endpoint) error {
+	if c.controller == "prague" {
+		if err := checkPragueReceiver(ctx, c); err != nil {
+			return err
+		}
+	}
 	clip, err := readClip(c.video)
 	if err != nil {
 		return err
@@ -494,6 +541,7 @@ func send(ctx context.Context, c config, e *endpoint) error {
 		for {
 			packets, _, readErr := sender.ReadRTCP()
 			if readErr != nil {
+				e.report(fmt.Errorf("read controller feedback: %w", readErr))
 				return
 			}
 			e.feedbacks.Add(1)
@@ -536,9 +584,55 @@ func send(ctx context.Context, c config, e *endpoint) error {
 			}
 			index = (index + 1) % len(clip.frames)
 		case <-metrics.C:
-			e.log.Info("sender metrics", "gcc_target_bps", e.estimator.GetTargetBitrate(), "rtcp_batches", e.feedbacks.Load(), "congestion_feedback_reports", e.feedbackReports.Load(), "gcc", e.estimator.GetStats(), "encoder_target_bps", nil, "ce_count", nil)
+			stats := e.estimator.GetStats()
+			if c.controller == "prague" {
+				e.log.Info("sender metrics", "controller", c.controller, "target_bps", e.estimator.GetTargetBitrate(), "congestion_feedback_reports", e.feedbackReports.Load(), "prague", stats, "ce_count", stats["ce"], "encoder_target_bps", nil)
+			} else {
+				e.log.Info("sender metrics", "gcc_target_bps", e.estimator.GetTargetBitrate(), "rtcp_batches", e.feedbacks.Load(), "congestion_feedback_reports", e.feedbackReports.Load(), "gcc", stats, "encoder_target_bps", nil, "ce_count", nil)
+			}
 		}
 	}
+}
+
+// checkPragueReceiver agrees lab ECN capability explicitly before sending ECT(1).
+// This paired-host check is not general RFC 6679 SDP ECN negotiation.
+func checkPragueReceiver(ctx context.Context, c config) error {
+	u, err := url.Parse(c.peer)
+	if err != nil {
+		return err
+	}
+	u.Path = "/healthz"
+	u.RawQuery = ""
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		return err
+	}
+	dialer := &net.Dialer{Timeout: 3 * time.Second, LocalAddr: &net.TCPAddr{IP: net.ParseIP(c.localIP)}}
+	transport := &http.Transport{DialContext: dialer.DialContext}
+	defer transport.CloseIdleConnections()
+	client := &http.Client{Transport: transport, Timeout: 3 * time.Second}
+	response, err := client.Do(request)
+	if err != nil {
+		return fmt.Errorf("verify Prague receiver: %w", err)
+	}
+	defer response.Body.Close()
+	var health struct {
+		Controller string `json:"controller"`
+		Feedback   string `json:"feedback"`
+		ECN        bool   `json:"ecn_observation"`
+		Claimed    bool   `json:"session_claimed"`
+		Service    string `json:"service"`
+	}
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("Prague receiver health returned %s", response.Status)
+	}
+	if err := json.NewDecoder(io.LimitReader(response.Body, 65536)).Decode(&health); err != nil {
+		return fmt.Errorf("decode Prague readiness: %w", err)
+	}
+	if health.Service != "pion-l4s" || health.Controller != "prague" || health.Feedback != "ccfb" || !health.ECN || health.Claimed {
+		return fmt.Errorf("Prague requires a ready Prague/CCFB/ECN receiver")
+	}
+	return nil
 }
 
 type videoClip struct {

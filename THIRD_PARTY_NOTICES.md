@@ -1,4 +1,11 @@
-# Pion source attribution
+# Third-party source attribution
+
+The Prague integration vendors `prague_cc.cpp` and `prague_cc.h` unchanged from
+L4STeam/udp_prague commit `46986fb95f1fdd17bf6225a0afb35f073eb7b7d9`, under
+Apache-2.0. Its license is included at `internal/prague/native/LICENSE`.
+The bridge and RTP/RTCP/ECN adapters are implemented in this project.
+
+## Pion
 
 The starter's Pion API usage is informed by the Pion WebRTC
 [`bandwidth-estimation-from-disk`](https://github.com/pion/webrtc/blob/v4.2.26/examples/bandwidth-estimation-from-disk/main.go)

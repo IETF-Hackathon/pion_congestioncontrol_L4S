@@ -1,9 +1,10 @@
 # Run the Pion peers on the IETF 127 testbed
 
-This workflow runs the current GCC transport starter using **Altanai's ICE and
-interceptor forks**. It checks the endpoint attachment and records a repeatable
-run. Prague, per-packet ECN marking/observation, adaptive encoding, and the full
-six-metric comparison are still pending. No lab results have been collected.
+This workflow runs GCC or experimental Prague using **Altanai's ICE and
+interceptor forks**. The application supplies Prague pacing and socket ECN
+with ECN-aware RFC 8888 feedback. See [Prague integration](prague.md).
+Adaptive encoding, physical lab validation, and the full six-metric comparison
+remain pending. No physical lab results have been collected.
 
 See the [recorded local-run preview](../../index.html#preview) for the GCC/CCFB
 and GCC/TWCC checks already completed on one Mac. They exercised the controller
@@ -42,7 +43,7 @@ and edited config to the server, or publish/check out the tested branch, and
 build for each host's own OS/architecture. Do not copy a Mac binary to a Linux
 server.
 
-Requirements: Go 1.24 or newer, Bash, and Python 3.9 or newer. The receiver may
+Requirements: Go 1.24 or newer, cgo, a C++11 compiler, Bash, and Python 3.9 or newer. The receiver may
 run on macOS; the server may run Linux with `iproute2`. FFmpeg with `libvpx` is
 needed only on the sender to generate a sample clip.
 
@@ -75,6 +76,8 @@ Keep imports and the library `module` declarations at their original Pion paths.
 ```sh
 cp testbed/lld-black4.example.json testbed/local.json
 ```
+
+For Prague set `controller` to `prague` and keep `feedback` as `ccfb`; the helper passes the selected controller to both peers and verifies the receiver's ECN capability. Use GCC in a separate run/config.
 
 Edit **both** endpoint sections in `testbed/local.json` with operator-assigned
 IPv4 addresses and Ethernet interface names, then place the same config on
@@ -179,4 +182,4 @@ further instrumentation before filling the project page's results section.
 All Go functions have purpose comments, all Python functions have docstrings,
 and each script has a file overview. See the [build guide](build-system.md) for
 direct binary use and local library workspaces, and [the mapping](udp-prague-pion-mapping.md)
-for the unimplemented Prague transport/controller work.
+for the design comparison. See [the implemented Prague bridge](prague.md) for current behavior and remaining limitations.

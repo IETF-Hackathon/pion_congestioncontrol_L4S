@@ -16,15 +16,15 @@ Dependencies are pinned in `go.mod` and `go.sum`: `github.com/pion/webrtc/v4 v4.
 
 ## Current limits
 
-This is a transport and feedback starter. **Prague and outer-IP ECN observation/marking are not implemented.** `--controller prague` fails explicitly. RFC 8888 negotiation alone does not enable ECN. The log's CE count and encoder target are `null` to indicate unavailable measurements.
+The experimental `--controller prague` mode integrates the pinned UDP-Prague core, synchronous pacing, socket ECN and ECN-aware RFC 8888 reports. See [Prague details](prague.md) for build requirements, limits and commands. CE counts are available in Prague mode; encoder targets are still unavailable. GCC retains its previous ECN behavior.
 
-The prerecorded source runs at a fixed frame rate and bitrate; GCC controls the packet pacer but does not adapt the encoder/source in this first version. Sustained offered load above the pacing rate can build up the pacer's queue. Add source adaptation and a bounded queue policy before using it for congestion performance comparisons. Receiver payload throughput includes all received RTP payloads, including any duplicates; it is not a deduplicated application goodput measurement. Queue delay requires bottleneck telemetry. The starter does not yet calculate all six POC metrics.
+The prerecorded source runs at a fixed frame rate and bitrate; GCC controls the packet pacer but does not adapt the encoder/source in this first version. In GCC mode, sustained offered load above the pacing rate can build up the pacer's queue. Prague mode blocks RTP writes instead, so the fixed source can slow down; it still lacks encoder adaptation. Add source adaptation and a bounded queue policy before using it for congestion performance comparisons. Receiver payload throughput includes all received RTP payloads, including any duplicates; it is not a deduplicated application goodput measurement. Queue delay requires bottleneck telemetry. The starter does not yet calculate all six POC metrics.
 
 Each receiver process handles one sender session. Restart it for the next run. The signaling service has no user authentication; bind it to the intended lab address for the controlled test.
 
 ## Build
 
-Install Go 1.24 or newer. FFmpeg with VP8 encoding is needed only to create the sample input.
+Install Go 1.24 or newer, cgo support and a C++11 compiler (Clang on macOS or g++ on Linux). FFmpeg with VP8 encoding is needed only to create the sample input. Use `bash scripts/check.sh` for checks with the reference controller's signed-wrap flag.
 
 ```sh
 cd /Users/albisht/ietf/pion-l4s-interop

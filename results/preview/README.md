@@ -1,5 +1,12 @@
 # Recorded local GCC preview
 
+The later [Prague local snapshot](prague-local-20261114.json) records a six-second
+Prague/CCFB loopback call after the integration: the receiver's last sample has
+358 RTP packets, all ECT(1), and zero CE; the sender's last sample has 205 CCFB
+reports. These samples have separate timestamps. Go tests, race checks, vet,
+eight Python runner tests, and local GCC/CCFB and GCC/TWCC calls pass. This is
+local evidence. The physical testbed run is awaiting a separate sender host.
+
 [`local-gcc-20261114.json`](local-gcc-20261114.json) summarizes the two GCC
 transport checks completed on 14 November 2026 around 15:00 PST. The single
 project page displays these observations in its [run preview](../../index.html#preview).
@@ -27,8 +34,9 @@ were preserved from the existing session runs; creating this preview did not
 rerun media or produce a new experiment.
 
 **The GCC testbed baseline has not been run.** No DualPI2 bottleneck or competing
-flow was present in these local checks. Prague and outer-IP ECN are not yet
-implemented. Null POC metrics mean unavailable, not zero. The main experimental
+flow was present in these local checks. Prague and outer-IP ECN were not yet
+implemented when these historical GCC runs were recorded; see the current
+[Prague implementation](../../docs/pion-l4s-interop/prague.md). Null POC metrics mean unavailable, not zero. The main experimental
 results table stays blank until the relevant measurements are collected.
 
 Use the [testbed guide](../../docs/pion-l4s-interop/testbed.md) for the next

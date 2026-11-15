@@ -1,0 +1,30 @@
+# Isolated Linux development server. Its virtual network stays on this Mac;
+# it does not put a sender on the physical testbed's servers switch.
+minimumLimaVersion: "1.0.0"
+vmType: vz
+arch: aarch64
+cpus: 2
+memory: 3GiB
+disk: 16GiB
+images:
+  - location: https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-arm64.img
+    arch: aarch64
+    digest: sha256:50e24e1fb79e89116e939d90aa7738f7af48c442fa1bc2510131e0b39c50348e
+mounts: []
+networks:
+  - vzNAT: true
+containerd:
+  system: false
+  user: false
+ssh:
+  loadDotSSHPubKeys: false
+  forwardAgent: false
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      # Install build/media tools inside the guest only.
+      set -euo pipefail
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y --no-install-recommends ca-certificates git build-essential golang-go python3 iproute2 ffmpeg

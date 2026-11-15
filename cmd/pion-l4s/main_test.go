@@ -9,9 +9,31 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
+
+// TestPragueReadinessRejectsGCC prevents marking toward a mismatched receiver.
+func TestPragueReadinessRejectsGCC(t *testing.T) {
+	for _, controller := range []string{"gcc", "prague"} {
+		t.Run(controller, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path != "/healthz" {
+					t.Errorf("unexpected readiness path %s", r.URL.Path)
+				}
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = io.WriteString(w, `{"service":"pion-l4s","controller":"`+controller+`","feedback":"ccfb","ecn_observation":true,"session_claimed":false}`)
+			}))
+			defer server.Close()
+			err := checkPragueReceiver(context.Background(), config{peer: server.URL + "/offer", localIP: "127.0.0.1"})
+			if (err == nil) != (controller == "prague") {
+				t.Fatalf("readiness %s: %v", controller, err)
+			}
+		})
+	}
+}
 
 // fixture creates a tiny IVF container for parser validation without disk I/O.
 func fixture() []byte {
@@ -64,7 +86,7 @@ func TestCancelledStartup(t *testing.T) {
 	}
 }
 
-// TestPragueCannotSilentlyRunGCC prevents a baseline from being labeled Prague.
+// TestPragueCannotSilentlyRunGCC requires the ECN transport inputs for Prague.
 func TestPragueCannotSilentlyRunGCC(t *testing.T) {
 	c := config{role: "sender", controller: "prague", feedback: "ccfb", initialRate: 1_000_000}
 	if err := c.validate(); err == nil {
