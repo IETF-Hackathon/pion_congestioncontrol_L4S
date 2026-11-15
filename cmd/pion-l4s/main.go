@@ -36,7 +36,7 @@ import (
 
 type config struct {
 	role, listen, peer, iface, localIP, video, controller, feedback string
-	recordDir                                                       string
+	recordDir, pacingBackend                                        string
 	loopback                                                        bool
 	duration                                                        time.Duration
 	initialRate                                                     int
@@ -58,6 +58,7 @@ func main() {
 	flag.StringVar(&c.controller, "controller", "gcc", "gcc or prague; use the same value on both peers")
 	flag.StringVar(&c.feedback, "feedback", "ccfb", "ccfb (RFC 8888) or twcc; use the same value at both ends")
 	flag.StringVar(&c.recordDir, "record-dir", "", "optional private directory for SDP and controller-feedback recordings")
+	flag.StringVar(&c.pacingBackend, "prague-pacing-backend", "auto", "experimental Prague sender pacing: auto, portable or linux-timerfd")
 	flag.BoolVar(&c.loopback, "loopback", false, "include loopback ICE candidates for local smoke checks")
 	flag.DurationVar(&c.duration, "duration", 0, "whole-process time limit including setup; zero runs until Ctrl+C")
 	flag.IntVar(&c.initialRate, "initial-bitrate", 1_000_000, "initial controller target in bits/second")
@@ -77,6 +78,14 @@ func main() {
 
 // validate rejects unsupported controller modes and invalid network/media flags.
 func (c config) validate() error {
+	if c.pacingBackend != "" {
+		if err := prague.ValidatePacingBackend(c.pacingBackend); err != nil {
+			return err
+		}
+		if c.pacingBackend != "auto" && (c.role != "sender" || c.controller != "prague") {
+			return fmt.Errorf("explicit Prague pacing backend applies only to a Prague sender")
+		}
+	}
 	if c.role != "receiver" && c.role != "sender" {
 		return fmt.Errorf("role must be receiver or sender")
 	}
@@ -193,7 +202,11 @@ func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 			var estimator cc.BandwidthEstimator
 			var err error
 			if c.controller == "prague" {
-				estimator, err = prague.New(c.initialRate)
+				backend := c.pacingBackend
+				if backend == "" {
+					backend = "auto"
+				}
+				estimator, err = prague.New(c.initialRate, prague.WithPacingBackend(backend))
 			} else {
 				estimator, err = gcc.NewSendSideBWE(gcc.SendSideBWEInitialBitrate(c.initialRate))
 			}
@@ -361,14 +374,18 @@ func run(ctx context.Context, c config, log *slog.Logger) error {
 		return err
 	}
 	defer e.close()
+	pacingBackend := ""
+	if c.controller == "prague" && e.estimator != nil {
+		pacingBackend, _ = e.estimator.GetStats()["pacing_backend"].(string)
+	}
 	if err := e.recording.event("session_started", map[string]any{"role": c.role, "controller": c.controller, "feedback": c.feedback,
-		"interface": c.iface, "local_ip": c.localIP, "encoder_adaptation": false}); err != nil {
+		"interface": c.iface, "local_ip": c.localIP, "encoder_adaptation": false, "pacing_backend": pacingBackend}); err != nil {
 		return err
 	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	log.Info("capabilities", "controller", c.controller, "feedback", c.feedback, "ecn_observation", e.ecn != nil, "prague", c.controller == "prague", "encoder_adaptation", false)
+	log.Info("capabilities", "controller", c.controller, "feedback", c.feedback, "ecn_observation", e.ecn != nil, "prague", c.controller == "prague", "encoder_adaptation", false, "pacing_backend", pacingBackend)
 	log.Info("network settings", "interface", c.iface, "local_ip", c.localIP, "udp_port_min", c.udpMin, "udp_port_max", c.udpMax)
 	if c.role == "receiver" {
 		return receive(ctx, c, e)
@@ -633,23 +650,41 @@ func send(ctx context.Context, c config, e *endpoint) error {
 	defer frames.Stop()
 	defer metrics.Stop()
 	index := 0
+	mediaStarted, lastSocketSample := time.Now(), time.Now()
+	var sourceFrames, sourceBytes, sampleWriteNS, maxSampleWriteNS, maxTickLatenessNS, lastSocketBytes uint64
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case err := <-e.errors:
 			return err
-		case <-frames.C:
+		case scheduled := <-frames.C:
+			started := time.Now()
+			sourceFrames++
+			sourceBytes += uint64(len(clip.frames[index]))
+			maxTickLatenessNS = max(maxTickLatenessNS, uint64(max(started.Sub(scheduled).Nanoseconds(), 0)))
 			if err := track.WriteSample(media.Sample{Data: clip.frames[index], Duration: clip.interval}); err != nil {
 				return fmt.Errorf("send video sample: %w", err)
 			}
+			elapsed := uint64(time.Since(started).Nanoseconds())
+			sampleWriteNS += elapsed
+			maxSampleWriteNS = max(maxSampleWriteNS, elapsed)
 			index = (index + 1) % len(clip.frames)
 		case <-metrics.C:
 			stats := e.estimator.GetStats()
+			now := time.Now()
+			source := map[string]any{"frames_submitted": sourceFrames, "encoded_bytes_submitted": sourceBytes, "sample_write_ns_total": sampleWriteNS, "sample_write_ns_max": maxSampleWriteNS, "tick_lateness_ns_max": maxTickLatenessNS, "submitted_bps": float64(sourceBytes) * 8 / now.Sub(mediaStarted).Seconds(), "note": "source submissions and blocking time; not NIC throughput or decoded-video latency"}
+			var socketStats map[string]any
+			if e.ecn != nil {
+				socketStats = e.ecn.outboundStats()
+				bytes := e.ecn.txMediaBytes.Load()
+				socketStats["interval_datagram_bps"] = float64(bytes-lastSocketBytes) * 8 / now.Sub(lastSocketSample).Seconds()
+				lastSocketBytes, lastSocketSample = bytes, now
+			}
 			if c.controller == "prague" {
-				e.log.Info("sender metrics", "controller", c.controller, "target_bps", e.estimator.GetTargetBitrate(), "congestion_feedback_reports", e.feedbackReports.Load(), "prague", stats, "ce_count", stats["ce"], "encoder_target_bps", nil)
+				e.log.Info("sender metrics", "controller", c.controller, "target_bps", e.estimator.GetTargetBitrate(), "congestion_feedback_reports", e.feedbackReports.Load(), "prague", stats, "ce_count", stats["ce"], "encoder_target_bps", nil, "source", source, "media_udp", socketStats)
 			} else {
-				e.log.Info("sender metrics", "gcc_target_bps", e.estimator.GetTargetBitrate(), "rtcp_batches", e.feedbacks.Load(), "congestion_feedback_reports", e.feedbackReports.Load(), "gcc", stats, "encoder_target_bps", nil, "ce_count", nil)
+				e.log.Info("sender metrics", "gcc_target_bps", e.estimator.GetTargetBitrate(), "rtcp_batches", e.feedbacks.Load(), "congestion_feedback_reports", e.feedbackReports.Load(), "gcc", stats, "encoder_target_bps", nil, "ce_count", nil, "source", source)
 			}
 		}
 	}

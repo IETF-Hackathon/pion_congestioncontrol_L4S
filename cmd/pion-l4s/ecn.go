@@ -21,12 +21,15 @@ type ecnSample struct {
 	at   time.Time
 }
 type ecnSocket struct {
-	conn             *net.UDPConn
-	mark             bool
-	writeMu          sync.Mutex
-	mu               sync.Mutex
-	samples          [65536]ecnSample
-	ect1, ce, nonect atomic.Uint64
+	conn                                          *net.UDPConn
+	mark                                          bool
+	writeMu                                       sync.Mutex
+	mu                                            sync.Mutex
+	samples                                       [65536]ecnSample
+	ect1, ce, nonect                              atomic.Uint64
+	origin                                        time.Time
+	txMediaPackets, txMediaBytes, txMediaFailures atomic.Uint64
+	txFirstNS, txLastNS                           atomic.Int64
 }
 
 // rtpIdentity recognizes muxed SRTP data, excluding STUN, DTLS and SRTCP.
@@ -63,7 +66,7 @@ func newECNSocket(c config) (*ecnSocket, error) {
 		conn.Close()
 		return nil, fmt.Errorf("enable received ECN metadata: %w", err)
 	}
-	return &ecnSocket{conn: conn, mark: c.role == "sender"}, nil
+	return &ecnSocket{conn: conn, mark: c.role == "sender", origin: time.Now()}, nil
 }
 
 // ReadFrom captures per-datagram ECN and timestamps before the ICE mux copies it.
@@ -120,9 +123,25 @@ func (s *ecnSocket) take(ssrc uint32, seq uint16) (ecnSample, error) {
 }
 
 // WriteTo serializes TOS changes and marks only SRTP data; preserve DSCP bits.
-func (s *ecnSocket) WriteTo(b []byte, addr net.Addr) (int, error) {
+func (s *ecnSocket) WriteTo(b []byte, addr net.Addr) (n int, err error) {
 	s.writeMu.Lock()
 	defer s.writeMu.Unlock()
+	_, _, media := rtpIdentity(b)
+	media = media && s.mark
+	defer func() {
+		if !media {
+			return
+		}
+		if err != nil {
+			s.txMediaFailures.Add(1)
+			return
+		}
+		at := time.Since(s.origin).Nanoseconds() + 1
+		s.txFirstNS.CompareAndSwap(0, at)
+		s.txLastNS.Store(at)
+		s.txMediaPackets.Add(1)
+		s.txMediaBytes.Add(uint64(n))
+	}()
 	bits := 0
 	if _, _, ok := rtpIdentity(b); ok && s.mark {
 		bits = 1
@@ -147,6 +166,11 @@ func (s *ecnSocket) WriteTo(b []byte, addr net.Addr) (int, error) {
 		return 0, optionErr
 	}
 	return s.conn.WriteTo(b, addr)
+}
+
+// outboundStats reports media datagrams accepted by UDP, separately from NIC TX.
+func (s *ecnSocket) outboundStats() map[string]any {
+	return map[string]any{"accepted_packets": s.txMediaPackets.Load(), "accepted_datagram_bytes": s.txMediaBytes.Load(), "write_failures": s.txMediaFailures.Load(), "socket_created_at_utc": s.origin.UTC().Format(time.RFC3339Nano), "first_write_ns_since_socket": max(s.txFirstNS.Load()-1, 0), "last_write_ns_since_socket": max(s.txLastNS.Load()-1, 0), "note": "SRTP datagrams accepted by UDP WriteTo; excludes IP/Ethernet headers and control traffic; not NIC departure"}
 }
 
 // Close releases the socket and unblocks the ICE mux's reader.

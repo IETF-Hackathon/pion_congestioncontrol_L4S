@@ -76,6 +76,41 @@ func TestECNMetadataToFeedback(t *testing.T) {
 	}
 }
 
+// TestOutboundMediaAccounting separates accepted SRTP bytes, control and failures.
+func TestOutboundMediaAccounting(t *testing.T) {
+	receiver, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.ParseIP("127.0.0.1")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer receiver.Close()
+	sender, err := newECNSocket(config{role: "sender", localIP: "127.0.0.1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sender.Close()
+	media := make([]byte, 24)
+	media[0], media[1] = 0x80, 96
+	if _, err = sender.WriteTo(media, receiver.LocalAddr()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = sender.WriteTo(make([]byte, 20), receiver.LocalAddr()); err != nil {
+		t.Fatal(err)
+	}
+	stats := sender.outboundStats()
+	if stats["accepted_packets"] != uint64(1) || stats["accepted_datagram_bytes"] != uint64(len(media)) || stats["write_failures"] != uint64(0) {
+		t.Fatalf("outbound stats: %v", stats)
+	}
+	if err = sender.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = sender.WriteTo(media, receiver.LocalAddr()); err == nil {
+		t.Fatal("closed socket accepted media")
+	}
+	if sender.txMediaFailures.Load() != 1 || sender.txMediaPackets.Load() != 1 {
+		t.Fatal("failed datagram counted as accepted")
+	}
+}
+
 // TestRTPClassification keeps ICE, DTLS and RTCP out of the L4S data marking path.
 func TestRTPClassification(t *testing.T) {
 	for _, pt := range []byte{200, 201, 205, 206} {

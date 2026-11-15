@@ -1,6 +1,8 @@
-# Proposed Prague pacing scheduler
+# Prague pacing scheduler: design and implementation
 
-Status: design recorded on 15 November 2026; scheduler implementation and performance validation are pending. The current sender still uses `Controller.AddStream` and its per-packet Go timer. This document proposes a change to the Go adapter, with the native congestion-control algorithm and receiver CCFB behavior held fixed for the first comparison.
+Status on 15 November 2026: the scheduler is implemented and three exploratory physical trials are captured; performance acceptance is incomplete. The [old runtime is archived](../../archive/prague-pacing-v1/README.md). Native congestion control and receiver CCFB behavior are held fixed. Linux lab unit/race/vet/build checks and macOS unit/race/vet/helper/build and local Prague/GCC media checks passed. On the actual sender, admission-only timing improved from 8.972 to 28.33 Mbps. [Physical Prague trials](../../results/preview/pion-prague-pacing-v2-25m-20261115T190910Z.md) averaged 13.120 Mbps steady frame throughput versus the saved GCC baseline's 18.357 Mbps. The ≥25 Mbps unshaped actual-media-output gate is not yet verified.
+
+The new scheduler consumes the native **250 µs burst allowance**, rather than ticking every 250 µs. It deliberately differs from the demo sender's signed receive-wait compensation. See the [three-way formula and pacing comparison](pacing-algorithms.md) for the exact distinctions and numerical examples. The original per-packet Go timer described below is historical behavior, not the new implementation.
 
 ## Evidence and working hypothesis
 
@@ -12,9 +14,9 @@ The leading hypothesis is that one-packet-per-wakeup scheduling, timer lateness,
 
 Absolute deadlines or token accounting alone cannot solve a 1 ms wakeup floor while allowing only about one packet per wakeup. Accurate waiting and measured departure timing are essential parts of the proposal.
 
-## Current behavior versus proposed behavior
+## Archived behavior versus implemented redesign
 
-| Area | Current implementation | Proposed scheduler |
+| Area | Archived implementation | New scheduler |
 | --- | --- | --- |
 | Rate accounting | After admission, sets `next = now + packetBytes / rate`; lateness is added to the sending schedule. | Maintains byte credit from elapsed monotonic time and the previously applied rate, with a strict burst cap. |
 | Deadline | Relative wait recalculated from `next`. | Computes an absolute eligibility deadline from the remaining byte deficit; rechecks current state after every wakeup. |
@@ -24,7 +26,7 @@ Absolute deadlines or token accounting alone cannot solve a 1 ms wakeup floor wh
 | Feedback and close | Buffered notification channel and per-wait timer cancellation. | Wakes the active backend, then reevaluates rate/window/failure state. Shutdown joins only owned waits before releasing descriptors. |
 | Observation | Native target, counters and feedback traces; no independent sender throughput series. | Adds applied-rate, budget, timer-lateness, wait-reason and accepted-byte metrics, plus sender-side capture validation. |
 | Media source | Synchronous packet writes can slow the IVF frame producer. | Retains bounded backpressure for this patch and measures actual frame production and frame-send duration. |
-| Expected result | Approximately 9 Mbps observed in these physical Prague runs. | Remove an artificial scheduling ceiling while preserving congestion response; no new throughput result exists yet. |
+| Observed result | Approximately 9 Mbps in earlier physical Prague runs. | Three new trials averaged 13.12 Mbps steady frame throughput and 13.22 ms mean per-trial P99 transit; substantial pacing/window waits remain. See the captured comparison and its limits. |
 
 ## Architecture and ownership
 
@@ -83,21 +85,21 @@ Expose these observations without adding an unbounded per-packet logging queue:
 
 | Observation | Meaning |
 | --- | --- |
-| Native and applied rate, window, burst, reference size, sample time | Distinguishes controller permission from the particular limits applied at admission. |
+| Cached applied native rate, window, burst, reference size, sample time | Distinguishes controller permission from measured socket output. |
 | Pacing-wait and window-wait counts/durations | Identifies the active limiter. |
-| Requested deadline, actual wake and lateness distribution | Tests the timer hypothesis directly. |
+| Requested-wait sum and late-wake sum/count/maximum | Tests timing behavior; detailed lateness distributions still need a bounded trace or external capture. |
 | Admitted bytes, writer-accepted bytes, failed writes | Distinguishes admission, successful API return and failure. |
 | Media UDP datagram bytes and write timestamps | Observes output at the socket boundary; excludes STUN/DTLS/RTCP counters. |
-| Frame production, frame-send duration and age | Detects source starvation or backpressure changing offered load. |
+| Frame production, frame-send blocking duration and ticker lateness | Detects backpressure changing offered load; ticker lateness is not decoded frame age. |
 | Backend, OS/architecture, Go version, binary/source/dependency hashes | Makes the comparison reproducible. |
 
 Use aggregate counters/histograms for normal runs and a bounded detailed trace for selected diagnostic intervals. Preserve truncation/sample-drop markers and the existing recording cap. Measure tracing overhead. A successful UDP write is kernel acceptance, not proof of NIC departure; retain an appropriately timestamped sender capture and compare it with the two monitor captures. Describe software versus hardware timestamp placement instead of claiming all captures are NIC-wire timestamps.
 
-## Planned files and interfaces
+## Implemented files and interfaces
 
-These are proposed changes, not files or flags already implemented:
+These files and flags now exist. The rules above remain the implementation specification; performance rollout is provisional:
 
-| File | Planned change |
+| File | Implemented change |
 | --- | --- |
 | `internal/prague/controller.go` | Delegate admission timing to the budget/waiter, preserve history and feedback handling, expose applied limits and wait diagnostics. |
 | `internal/prague/pacing_budget.go` | Monotonic elapsed-time accounting, byte credit, burst cap and eligibility deadline calculation. |
@@ -116,13 +118,15 @@ Keep `cc.BandwidthEstimator` compatible. Preserve existing callers of `prague.Ne
 2. **Real Linux pacing measurement.** Compare the original and proposed scheduler on the same host. First isolate the scheduler with fixed rate outputs, a defined window and timely synthetic acknowledgments. Measure requested/actual waits, accepted-byte rate, departure gaps, bursts, CPU and allocations. Fake-clock tests cannot establish OS timer precision.
 3. **Whole-Pion check without a capacity bottleneck.** Supply a measured source of about 30 Mbps and a controller allowance of at least that rate. Retain realistic feedback/RTT conditions and report window blocking. A near-zero-RTT loopback path with 20 ms CCFB can itself become window/feedback-limited, so it is not automatically a valid high-rate pacer test. Use owned test fixtures; changing shared lab settings is a separate action.
 4. **Acceptance gate.** Demonstrate at least 25 Mbps actual media output on that sufficiently provisioned test path, within the recorded rate/window/burst policy, without hidden queue growth, invalid-ECN/feedback regressions or close leaks. This is a proposed gate, not an achieved result or a promise of 25 Mbps through a 20 Mbps bottleneck. Run the repository checks, relevant benchmarks and race checks when the implementation exists.
-5. **Only then repeat the physical pair.** One Prague run and one GCC run through the same verified bottleneck, with the same source and load profile. Preserve physical SDP/CCFB traces, sender timing and both capture points, including final feedback processing. Report throughput alongside sender waiting, network transit/queue delay, CE and loss. The scheduler patch alone does not complete encoder adaptation or establish performance superiority.
+5. **Physical comparison and rollout.** Three explicitly requested exploratory Prague trials have been contrasted with the saved three-trial GCC baseline. They retain SDP/CCFB traces, sender timing and both capture points, but do not satisfy full rollout acceptance: live shaping and background traffic remain unverified and final feedback tails need reconciliation. A controlled pair after the acceptance gate must use the same verified bottleneck, source and load profile, including final feedback processing. Report throughput alongside sender waiting, transit/queue delay, CE and loss. The scheduler patch alone does not complete encoder adaptation or establish performance superiority.
 
 If the Linux backend still cannot meet the timing gate under the native burst bounds, keep the result provisional and evaluate packet scheduling in the Linux networking stack as a separately specified backend. Enlarging bursts or weakening the congestion window to make a throughput graph rise is not an acceptable substitute.
 
 ## Source pointers
 
-- [Current admission loop and Go timer](../../internal/prague/controller.go), `Controller.AddStream`.
+- [Current admission loop](../../internal/prague/controller.go), `Controller.AddStream`, and [bounded budget](../../internal/prague/pacing_budget.go).
+- [Archived per-packet timer source](../../archive/prague-pacing-v1/README.md).
+- [Linux backend](../../internal/prague/pacing_wait_linux.go), [portable backend](../../internal/prague/pacing_wait_portable.go) and [timing benchmark](../../internal/prague/pacing_test.go).
 - [Native bridge](../../internal/prague/bridge.cc) and [burst/rate/window definitions](../../internal/prague/native/prague_cc.h).
 - [Native pacing phase and burst horizon](../../internal/prague/native/prague_cc.cpp), `GetCCInfo`, `BURST_TIME` and `RATE_OFFSET`.
 - [Existing feedback and shutdown tests](../../internal/prague/controller_test.go).

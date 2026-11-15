@@ -22,6 +22,7 @@
     "udp_port_max": 50100
   },
   "controller": "gcc",
+  "prague_pacing_backend": "auto",
   "feedback": "ccfb",
   "duration_seconds": 60,
   "initial_bitrate_bps": 1000000,

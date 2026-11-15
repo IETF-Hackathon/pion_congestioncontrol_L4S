@@ -12,16 +12,16 @@ import (
 )
 
 // controllerFixture owns a controller on a deterministic clock for one test.
-func controllerFixture(t *testing.T) (*Controller, *time.Time) {
+func controllerFixture(t *testing.T) (*Controller, *fakePacingWaiter) {
 	t.Helper()
-	c, err := New(1000000)
+	clock := newFakePacingWaiter()
+	c, err := newController(1000000, clock)
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = c.Close() })
-	now := c.start.Add(30 * time.Millisecond)
-	c.now = func() time.Time { return now }
-	return c, &now
+	clock.advance(30 * time.Millisecond)
+	return c, clock
 }
 
 // reportFixture wraps packet metrics in the wire report shape expected by Pion.
@@ -35,7 +35,7 @@ func TestFeedbackAccounting(t *testing.T) {
 	c.sent = 2
 	c.inflight = 200
 	for _, seq := range []uint16{65535, 0} {
-		c.history[packetKey{42, seq}] = &sentPacket{at: now.Add(-20 * time.Millisecond), bytes: 100}
+		c.history[packetKey{42, seq}] = &sentPacket{atNS: now.now() - int64(20*time.Millisecond), bytes: 100}
 	}
 	input := reportFixture(65535, rtcp.CCFeedbackMetricBlock{Received: true, ECN: rtcp.ECNECT1}, rtcp.CCFeedbackMetricBlock{})
 	if err := c.WriteRTCP(input, nil); err != nil {
@@ -60,8 +60,8 @@ func TestUnreportedLossReleasesWindow(t *testing.T) {
 	c, now := controllerFixture(t)
 	c.sent = 2
 	c.inflight = 200
-	c.history[packetKey{42, 1}] = &sentPacket{at: now.Add(-400 * time.Millisecond), bytes: 100}
-	c.history[packetKey{42, 2}] = &sentPacket{at: now.Add(-20 * time.Millisecond), bytes: 100}
+	c.history[packetKey{42, 1}] = &sentPacket{atNS: now.now() - int64(400*time.Millisecond), bytes: 100}
+	c.history[packetKey{42, 2}] = &sentPacket{atNS: now.now() - int64(20*time.Millisecond), bytes: 100}
 	if err := c.WriteRTCP(reportFixture(2, rtcp.CCFeedbackMetricBlock{Received: true, ECN: rtcp.ECNECT1}), nil); err != nil {
 		t.Fatal(err)
 	}
@@ -76,11 +76,11 @@ func TestCEReducesRate(t *testing.T) {
 	for _, ecn := range []rtcp.ECN{rtcp.ECNECT1, rtcp.ECNCE} {
 		c, now := controllerFixture(t)
 		for round := 0; round < 50; round++ {
-			*now = now.Add(30 * time.Millisecond)
+			now.advance(30 * time.Millisecond)
 			metrics := make([]rtcp.CCFeedbackMetricBlock, 10)
 			for i := range metrics {
 				seq := uint16(round*10 + i)
-				c.history[packetKey{42, seq}] = &sentPacket{at: now.Add(-20 * time.Millisecond), bytes: 1000}
+				c.history[packetKey{42, seq}] = &sentPacket{atNS: now.now() - int64(20*time.Millisecond), bytes: 1000}
 				metrics[i] = rtcp.CCFeedbackMetricBlock{Received: true, ECN: ecn}
 			}
 			c.sent += 10
@@ -102,10 +102,11 @@ func TestInvalidECNAndTimeoutFailClosed(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			c, now := controllerFixture(t)
 			if kind == "timeout" {
-				c.lastFeedback = now.Add(-3 * time.Second)
+				c.lastFeedbackNS = now.now() - int64(3*time.Second)
+				c.feedbackStarted = true
 			} else {
 				c.sent = 1
-				c.history[packetKey{42, 1}] = &sentPacket{at: now.Add(-time.Millisecond), bytes: 100}
+				c.history[packetKey{42, 1}] = &sentPacket{atNS: now.now() - int64(time.Millisecond), bytes: 100}
 				ecn := rtcp.ECNNonECT
 				if kind == "ECT0" {
 					ecn = rtcp.ECNECT0

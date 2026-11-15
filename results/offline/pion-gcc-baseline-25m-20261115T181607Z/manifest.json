@@ -1,0 +1,79 @@
+{
+  "baseline_id": "pion-gcc-baseline-25m-20261115T181607Z",
+  "created_at_utc": "2026-11-15T18:53:30.167341+00:00",
+  "description": "Selected Pion GCC UDP video and reverse feedback/control flow PDFs for all three baseline trials. These exclude aggregate/background-flow PDFs.",
+  "files": [
+    {
+      "trial": 1,
+      "kind": "video",
+      "direction": "downstream",
+      "flow": "UDP [192.168.1.216 50053] to [192.168.1.79 50053]",
+      "source_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r1_2026_11_15_19_21/2_downstream.pdf",
+      "filename": "trial-1-gcc-video-downstream.pdf",
+      "existing_file": "/Users/albisht/ietf/pion-l4s-interop/results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/2_downstream.pdf",
+      "retrieval": "copied from retained capture artifacts",
+      "bytes": 232264,
+      "sha256": "f16a1e684a3ae77844af4116db3c1bb86dc80d42b65936cf0a4233527be7a989"
+    },
+    {
+      "trial": 1,
+      "kind": "feedback",
+      "direction": "upstream",
+      "flow": "UDP [192.168.1.79 50053] to [192.168.1.216 50053]",
+      "source_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r1_2026_11_15_19_21/2_upstream.pdf",
+      "filename": "trial-1-gcc-feedback-upstream.pdf",
+      "existing_file": "/Users/albisht/ietf/pion-l4s-interop/results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/2_upstream.pdf",
+      "retrieval": "downloaded from lld-black4",
+      "bytes": 40417,
+      "sha256": "d7278c4877c80f90c4c721d7d315fade5c92b5041c11e833b7cbd3d1bb38983a"
+    },
+    {
+      "trial": 2,
+      "kind": "video",
+      "direction": "downstream",
+      "flow": "UDP [192.168.1.216 50006] to [192.168.1.79 50023]",
+      "source_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r2_2026_11_15_19_22/2_downstream.pdf",
+      "filename": "trial-2-gcc-video-downstream.pdf",
+      "existing_file": "/Users/albisht/ietf/pion-l4s-interop/results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/2_downstream.pdf",
+      "retrieval": "copied from retained capture artifacts",
+      "bytes": 218298,
+      "sha256": "13bfd7e9d24fd89fe5a18d203d18909d7ea29a9a84d5c3a07b7714a6f758752b"
+    },
+    {
+      "trial": 2,
+      "kind": "feedback",
+      "direction": "upstream",
+      "flow": "UDP [192.168.1.79 50023] to [192.168.1.216 50006]",
+      "source_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r2_2026_11_15_19_22/2_upstream.pdf",
+      "filename": "trial-2-gcc-feedback-upstream.pdf",
+      "existing_file": "/Users/albisht/ietf/pion-l4s-interop/results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/2_upstream.pdf",
+      "retrieval": "downloaded from lld-black4",
+      "bytes": 40722,
+      "sha256": "9b8b809e648af904a2708da0a7e59bd2e6fd2a33c8cc4e42df86a62e8089e714"
+    },
+    {
+      "trial": 3,
+      "kind": "video",
+      "direction": "downstream",
+      "flow": "UDP [192.168.1.216 50097] to [192.168.1.79 50081]",
+      "source_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r3_2026_11_15_19_24/1_downstream.pdf",
+      "filename": "trial-3-gcc-video-downstream.pdf",
+      "existing_file": "/Users/albisht/ietf/pion-l4s-interop/results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/1_downstream.pdf",
+      "retrieval": "copied from retained capture artifacts",
+      "bytes": 211397,
+      "sha256": "6b84d6fe59f7e02259f969332e51a46431840d7105746b16a207a1283973bf82"
+    },
+    {
+      "trial": 3,
+      "kind": "feedback",
+      "direction": "upstream",
+      "flow": "UDP [192.168.1.79 50081] to [192.168.1.216 50097]",
+      "source_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r3_2026_11_15_19_24/1_upstream.pdf",
+      "filename": "trial-3-gcc-feedback-upstream.pdf",
+      "existing_file": "/Users/albisht/ietf/pion-l4s-interop/results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/1_upstream.pdf",
+      "retrieval": "downloaded from lld-black4",
+      "bytes": 40384,
+      "sha256": "ce76e374f572183efb6d9ebd599d1bd8594c6baca4b73499a401646ffec83821"
+    }
+  ]
+}

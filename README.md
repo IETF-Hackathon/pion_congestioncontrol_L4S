@@ -16,6 +16,8 @@ A later [four-rate physical sweep](results/preview/prague-rate-sweep-20261114.js
 
 See the [Prague implementation status](docs/pion-l4s-interop/prague.md), [runtime component map](docs/pion-l4s-interop/components.md), and [recorded result index](results/preview/README.md). A GCC baseline and one exploratory GCC-versus-Prague comparison have run. The comparison used the same prerecorded source and duration, but lacked repetitions, verified matching bottleneck settings, and controlled cross traffic; it is not a controlled performance comparison. See the [comparison report](results/preview/pion-prague-vs-gcc-25m-20261115T172333Z.md). Historical local GCC/CCFB and GCC/TWCC transport checks remain in the [local snapshot](results/preview/local-gcc-20261114.json).
 
+The new Prague pacer uses native 250 µs burst sizing, bounded byte credit and Linux timerfd deadlines; the earlier runtime is retained in [archive/prague-pacing-v1](archive/prague-pacing-v1/README.md). See the [three-way formulas](docs/pion-l4s-interop/pacing-algorithms.md) for old Pion, new Pion and the UDP Prague demo. The patch passes checks on both OSes. [Three new captured trials](results/preview/pion-prague-pacing-v2-25m-20261115T190910Z.md) reached 13.12 Mbps mean steady frame throughput, versus 8.86 Mbps in the earlier Prague observation and 18.36 Mbps in the saved repeated GCC baseline. These remain exploratory measurements with network-setting and background-traffic limits. The 250 µs value is a burst horizon, not a fixed send interval.
+
 ## Runnable starter
 
 New calls can [record SDP and Pion feedback handling](docs/pion-l4s-interop/recordings.md).

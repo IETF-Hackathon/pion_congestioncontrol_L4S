@@ -105,9 +105,11 @@ Non-ECT/ECT(0) feedback, two seconds without fresh feedback, missing ECN metadat
 or history exhaustion ends the media run with an error. This integration stops
 on ECN failure instead of dynamically switching controllers in the same session.
 
-## Proposed pacing scheduler
+## Pacing scheduler implementation and validation
 
-The [scheduler design](pacing-scheduler-design.md) records the current approximately 9 Mbps observation and proposes bounded elapsed-time pacing with a precise Linux wait backend. It includes the current/proposed comparison, burst/window and cancellation rules, measurement points, and the acceptance gate. The runtime change and its performance verification remain pending.
+The [scheduler design](pacing-scheduler-design.md) is implemented locally with bounded elapsed-time byte credit, native-derived burst limits and a Linux monotonic timerfd/eventfd wait backend. macOS uses a reusable portable Go timer. The native 250 µs value sizes the burst; it is not a fixed packet timer. See [all three algorithms and formulas](pacing-algorithms.md) for the archived approximately 9 Mbps system, new Pion scheduler and upstream UDP Prague demo, including their different late-wakeup behavior.
+
+The [old runtime archive](../../archive/prague-pacing-v1/README.md) preserves the original implementation. Unit, race, vet, helper and local media checks pass. On the Linux lab sender, the fixed-rate admission benchmark improved from 8.97 to 28.33 Mbps. [Three captured physical trials](../../results/preview/pion-prague-pacing-v2-25m-20261115T190910Z.md) reached 13.12 Mbps mean steady frame rate against the saved GCC baseline's 18.36 Mbps. Prague had lower observed transit tails and no unmatched RTP identities between the taps; qdisc/capacity, background traffic, feedback tails and the ≥25 Mbps unshaped actual-output gate remain limitations. Select the experimental sender backend with `--prague-pacing-backend auto|portable|linux-timerfd`; `auto` selects timerfd on Linux. Explicit `linux-timerfd` fails on unsupported platforms. In testbed JSON use `"prague_pacing_backend": "linux-timerfd"` for a Prague Linux sender; the receiver ignores this sender-only field.
 
 ## Build and local verification
 
