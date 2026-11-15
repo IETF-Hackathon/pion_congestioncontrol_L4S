@@ -22,17 +22,25 @@ NAME = "pion-sender"
 ARTIFACTS = ROOT / "results/raw/server-pion-sender"
 GUEST_ROOT = "/home/pion-project"
 EXCLUDED = {".git", ".cache", "bin", "__pycache__", "local.json"}
+SOURCE_DIRS = {"cmd", "internal", "scripts", "testbed", "docs", ".agents", ".github"}
+SOURCE_ROOT_FILES = {"go.mod", "go.sum", ".gitignore", "README.md", "CONTRIBUTING.md", "THIRD_PARTY_NOTICES.md", "index.html", "run-testbed.sh"}
 
 
 def source_files(root):
     """Select regular project source files without secrets, media or run logs."""
-    for path in sorted(root.rglob("*")):
+    paths = [root / name for name in SOURCE_ROOT_FILES if (root / name).is_file()]
+    for name in SOURCE_DIRS:
+        if (root / name).is_dir():
+            paths.extend((root / name).rglob("*"))
+    for path in sorted(paths):
         relative = path.relative_to(root)
+        if relative.parts[0] not in SOURCE_DIRS and str(relative) not in SOURCE_ROOT_FILES:
+            continue
         if any(part in EXCLUDED for part in relative.parts):
             continue
         if relative.parts[0] in ("results", "media"):
             continue
-        if path.name.startswith(".env") or path.suffix in (".pcap", ".pcapng", ".pyc"):
+        if path.name.startswith(".env") or path.name.endswith(".local.json") or path.suffix in (".pcap", ".pcapng", ".pyc"):
             continue
         if path.is_file() and not path.is_symlink():
             yield path, relative

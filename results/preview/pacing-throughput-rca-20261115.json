@@ -1,0 +1,297 @@
+{
+  "schema_version": 1,
+  "incident": {
+    "id": "PION-THROUGHPUT-20261115",
+    "title": "Why this Pion Prague integration sends less traffic than GCC",
+    "status": "Partial RCA: sender limits confirmed; timing mechanism provisional",
+    "summary": "The sender allows approximately 25 Mbps but emits about 14 Mbps. Persistent in-flight-window blocking, synchronous source backpressure, and different GCC pacing/feedback defaults explain the observed gap more directly than a low configured Prague rate cap. A controlled feedback-cadence test is still required to isolate the timing mechanism.",
+    "scope": {
+      "Experiment": "Fixed 23.950988 Mbps VP8 clip, nominal 60 fps; initial controller target 25 Mbps",
+      "Peers": "Linux 192.168.1.216 to Mac 192.168.1.79 through the observed lld-black4 capture path",
+      "Primary evidence": "Fresh New Pion repeat, 15 November 2026, 11:37\u201311:38 PST; three saved GCC baselines for comparison",
+      "Collection": "Read existing artifacts and pinned source only; no new lab runs or configuration changes for this RCA"
+    },
+    "window": {
+      "start": "2026-11-15T18:21:20Z",
+      "end": "2026-11-15T19:38:25Z",
+      "timezone": "UTC; 10:21\u201311:38 America/Los_Angeles"
+    },
+    "onset_unknown": true
+  },
+  "impact": {
+    "status": "confirmed",
+    "summary": "The fresh repeat delivered 14.036 Mbps monitor frame throughput versus the saved GCC mean of 18.343 Mbps. In an aligned 28.22-second sender interval, UDP acceptance was 13.70 Mbps and the fixed-source loop submitted 33.17 frames/s versus its nominal 60 fps. These are experiment results, with no measured production-user impact.",
+    "evidence_ids": [
+      "CAPTURE",
+      "SENDER",
+      "SOURCE"
+    ],
+    "affected": [
+      "This fixed-source Pion Prague transport experiment; decoded playback latency was not measured."
+    ]
+  },
+  "rca": {
+    "reason": "Prague throughput remains below both its applied allowance and the previously collected GCC baseline.",
+    "root_cause": {
+      "status": "provisional",
+      "summary": "The confirmed constrained boundary is the Prague sender admission path. The leading mechanism is a window sized from RTT after subtracting receiver report hold, while actual window credit is released only after batched CCFB arrives. At approximately 22 ms RTT and 20 ms reports, that delay is comparable to the sending window duration. One-packet credit caps and synchronous writes propagate the stalls to the media source. The exact real-world contribution needs a one-variable cadence/window validation; GCC also uses materially different pacing and feedback defaults.",
+      "evidence_ids": [
+        "SENDER",
+        "WINDOW",
+        "CCFB",
+        "SOURCE",
+        "MODEL",
+        "GCC"
+      ]
+    },
+    "fix": "First expose and match feedback cadence, then compare controlled Prague runs at shorter report intervals with unchanged native controller, window and burst policies while recording their time-varying outputs. Verify reference-compatible RTT/report-hold handling, record actual departures and bounded queue/frame age, and match the source/pacing policies when isolating controller algorithms. Do not bypass the window or enlarge bursts to force a throughput number.",
+    "contributing_factors": [
+      "The 250 microsecond native value sizes a burst; it is not a fixed packet timer.",
+      "GCC uses an asynchronous queue, a 5 ms send cycle and a 1.5 multiplier after estimator updates.",
+      "GCC CCFB dispatch gaps are approximately 100 ms; Prague gaps approximately 20 ms.",
+      "Active qdisc/capacity and background traffic were not independently controlled."
+    ]
+  },
+  "evidence": [
+    {
+      "id": "CAPTURE",
+      "source": "Fresh repeat: matched ICE flow and both monitor captures",
+      "status": "observed_value",
+      "observed_at": "2026-11-15T19:38:23.621511+00:00",
+      "url": "http://lld-black4.local/data/new-pion-v2-repeat-25m-20261115T193712Z_2026_11_15_20_37/3_downstream.pdf",
+      "observation": "Monitor downstream: 14.036 Mbps frame throughput, median/P99 transit 10.633/12.714 ms, zero unmatched RTP identities between taps, 2,216 CE marks. Saved GCC means: 18.343 Mbps and 21.196/100.528 ms. Frame throughput includes headers and transit includes fixed delay.",
+      "proves": "The actual retained-flow outcomes; the mean frame-rate gap is present.",
+      "gap": "Different capture times and uncontrolled background traffic prevent a controller-only causal conclusion."
+    },
+    {
+      "id": "SENDER",
+      "source": "Fresh-repeat sender JSONL: two aligned metrics snapshots",
+      "status": "observed_value",
+      "observed_at": "2026-11-15T12:38:22.986676-07:00",
+      "observation": "Across 28.221 s: 13.696 Mbps UDP accepted; 14.015 Mbps on the adapter byte basis. Median periodic applied target 25.059 Mbps, range 20.400\u201326.797. Counter deltas: 14.718 s pacing, 11.830 s window, 1.672 s other elapsed time.",
+      "proves": "Substantial window blocking at the sender and output below controller permission. Header accounting alone is approximately a 0.32 Mbps difference in this interval.",
+      "gap": "UDP acceptance is not NIC departure; residual time is not CPU utilization. Pacing wait is expected rate enforcement, not automatically a defect."
+    },
+    {
+      "id": "WINDOW",
+      "source": "Fresh-repeat CCFB before/after snapshots and local Prague adapter",
+      "status": "observed_value",
+      "observed_at": "2026-11-15T12:38:22.986676-07:00",
+      "observation": "1474 of 1487 pre-CCFB snapshots (99.13%) lacked headroom for the largest 1,244-byte accounted packet. Each recorded CCFB reduced in-flight bytes. Median window 72000 bytes, median smoothed RTT 21.970 ms. No provisional loss was recorded in these CCFB states.",
+      "proves": "ACK-batch arrivals repeatedly release a near-full sending window.",
+      "gap": "The percentage counts snapshots at feedback arrivals, not percent of elapsed time or proof that every pending packet was full-sized."
+    },
+    {
+      "id": "CCFB",
+      "source": "Prague feedback.go; frozen GCC ccfb interceptor; both sender recordings",
+      "status": "observed_value",
+      "observation": "Prague sends CCFB every 20 ms; median actual dispatch gap 19.985 ms. Mean receiver report hold from unique packet offsets 10.635 ms. GCC uses ConfigureCongestionControlFeedback without interval options, whose pinned default is 100 ms; saved baseline median dispatch gaps are approximately 100 ms in all three trials.",
+      "proves": "Feedback format was shared, but feedback cadence was not matched. Receiver report hold is material relative to the approximately 22 ms network RTT.",
+      "gap": "A shorter interval has not yet been validated physically for Prague; report overhead and congestion response must be checked."
+    },
+    {
+      "id": "NATIVE",
+      "source": "controller.go WriteRTCP/AddStream and pinned native prague_cc.cpp",
+      "status": "observed_value",
+      "observation": "The adapter subtracts receiver ArrivalTimeOffset when forming RTT samples. The native window is approximately 1.03 times rate times that RTT, with packet rounding; the adapter independently requires enough byte credit and whole-packet window space. Burst credit is capped at the native burst bytes or the largest whole RTP packet (1,244 bytes in this run).",
+      "url": "https://github.com/L4STeam/udp_prague/blob/46986fb95f1fdd17bf6225a0afb35f073eb7b7d9/prague_cc.cpp#L493-L505",
+      "proves": "The code enforces both gates, bounds idle credit, and sizes its window using RTT that excludes report hold.",
+      "gap": "The native source and the WebRTC feedback translation must be considered together; this is not a standalone UDP-demo performance measurement."
+    },
+    {
+      "id": "GCC",
+      "source": "altanai/interceptor v0.1.51: leaky_bucket_pacer.go and send_side_bwe.go",
+      "status": "observed_value",
+      "observation": "GCC Write copies and queues packets, returning before their scheduled network writes. The sender drains its queue on a 5 ms cycle. SetTargetBitrate applies 1.5 times the estimator bitrate after an update; the initial constructor value is unmultiplied. This path has no corresponding Prague-style in-flight byte admission gate.",
+      "url": "https://github.com/altanai/interceptor/blob/v0.1.51/pkg/gcc/leaky_bucket_pacer.go",
+      "proves": "Controller estimate, pacer allowance, source blocking and actual network throughput are different quantities. GCC and Prague currently have different transport scheduling policies.",
+      "gap": "Actual GCC queue size/age and independent UDP-acceptance counters were not recorded in the saved baseline."
+    },
+    {
+      "id": "SOURCE",
+      "source": "main.go send loop and fresh-repeat source counters",
+      "status": "observed_value",
+      "observed_at": "2026-11-15T12:38:22.986676-07:00",
+      "observation": "WriteSample blocks in the synchronous Prague path. Within the aligned interval it occupied 28.201 of 28.221 s, including pacing and window waits. Source submissions averaged 33.17 frames/s and 13.331 Mbps; the largest observed frame write took 406.8 ms. The file nominally represents 60 fps and 23.951 Mbps.",
+      "proves": "Source backpressure lowers actual production even though the file nominal rate remains high.",
+      "gap": "No adaptive encoder, bounded frame-age policy or decoded-playback timing was measured."
+    },
+    {
+      "id": "LEGACY",
+      "source": "Archived v1 source, old captured flow and lab pacing benchmark",
+      "status": "observed_value",
+      "observation": "The old implementation reset each next-packet deadline from the actual current time and allocated Go timers per wait. Large-packet ingress gaps were approximately 1,171 microseconds. On the same lab sender, an admission-only fixed-rate fixture measured 8.972 Mbps for that algorithm and 28.33 Mbps with the new timerfd backend. The native maximum rate remained 50 Mbps.",
+      "proves": "Old timer scheduling was a material limitation; the new backend improves isolated admission timing and the physical plateau has moved above 9 Mbps.",
+      "gap": "The benchmark is not a full media A/B; the remaining 13\u201314 Mbps issue must be analyzed separately."
+    },
+    {
+      "id": "MODEL",
+      "source": "Local discrete-event model in results/raw/throughput-rca-20261115/analyze_rca.py",
+      "status": "observed_value",
+      "observation": "Idealized constant 25 Mbps rate, 72,000-byte window, 1,244-byte packets and 22 ms symmetric RTT, with perfect timers, no loss/CE and an always-ready source: 20 ms report batching yields 14.182 Mbps on the model byte basis. With no window gate the same model yields 24.999 Mbps. Other report intervals are retained in the metrics JSON.",
+      "proves": "Window/feedback coupling alone can produce a similar rate reduction under stated assumptions.",
+      "gap": "This is a mechanism demonstration, not a network measurement, native Prague simulation, predicted fix or permission to disable congestion controls."
+    },
+    {
+      "id": "TAIL",
+      "source": "Fresh-repeat monitor, CCFB trace and shutdown logs",
+      "status": "partial",
+      "observation": "Capture CE 2,216 versus last recorded sender CE 2,213. The bounded sender exited 0; the receiver reported a closed-pipe error during peer shutdown. Capture logs list one flushed packet on each interface.",
+      "proves": "Final feedback and receiver shutdown still require cleanup work.",
+      "gap": "These tail observations do not explain a sustained throughput gap over the preceding media interval."
+    },
+    {
+      "id": "NETWORK",
+      "source": "Available monitor configuration and capture evidence",
+      "status": "not_covered",
+      "observation": "Capture sides and selected ICE flow are known. Active DualPI2/SRM mode, configured capacity, queue telemetry, controlled background traffic and raw end-to-end RTT distributions were not established.",
+      "proves": "These quantities remain unresolved.",
+      "gap": "Do not attribute every observed latency or throughput difference solely to Prague versus GCC."
+    }
+  ],
+  "findings": [
+    {
+      "title": "Confirmed: the sender delivers below its permitted rate",
+      "status": "confirmed",
+      "evidence_ids": [
+        "SENDER",
+        "WINDOW"
+      ],
+      "summary": "The applied target is typically about 25 Mbps while the same sender interval accepts 13.70 Mbps of UDP media. Window waits consume 11.83 of 28.22 seconds (41.9%). Pacing waits consume 14.72 seconds (52.2%); normal pacing is expected and must not all be called wasted time. The measured constraint is in sender admission, before any downstream loss between the retained monitor taps."
+    },
+    {
+      "title": "Leading mechanism: RTT-sized window versus delayed, batched feedback",
+      "status": "provisional",
+      "evidence_ids": [
+        "WINDOW",
+        "CCFB",
+        "NATIVE",
+        "MODEL"
+      ],
+      "summary": "The window is sized from an RTT that excludes receiver report hold, but sender in-flight bytes cannot be released until that report returns. At 25 Mbps a 20 ms reporting period represents 62,500 bytes, close to the observed 72,000-byte median window. With 22 ms RTT and another 0\u201320 ms of receiver hold, the strict window gate repeatedly stalls. A perfect-timer model reproduces roughly 14 Mbps under representative values; a controlled live cadence test is needed to quantify causality."
+    },
+    {
+      "title": "Confirmed: bounded credit does not recover a whole window stall",
+      "status": "confirmed",
+      "evidence_ids": [
+        "NATIVE",
+        "SENDER"
+      ],
+      "summary": "The native 250 microsecond horizon gives one packet per burst at these rates. The new adapter caps credit at one whole accounted packet, so a multi-millisecond window stall cannot accumulate an unrestricted catch-up burst. Precision timing improves the old 9 Mbps limitation, but does not repair a mismatched window/feedback cycle."
+    },
+    {
+      "title": "Confirmed: backpressure reduces actual source production",
+      "status": "confirmed",
+      "evidence_ids": [
+        "SOURCE"
+      ],
+      "summary": "Prague blocks the RTP writer until both gates permit transmission. That blocks WriteSample and delays consumption of the 60 fps ticker. Actual source submissions in the aligned interval fell to 33.17 frames/s. Raising the initial target or reusing a higher-rate file does not eliminate these waits. The requested source rate is not the achieved source rate."
+    },
+    {
+      "title": "Confirmed: the GCC baseline has a different pacing and feedback policy",
+      "status": "confirmed",
+      "evidence_ids": [
+        "GCC",
+        "CCFB",
+        "CAPTURE"
+      ],
+      "summary": "GCC queues source writes asynchronously, drains on a 5 ms cycle, and allows 1.5 times an updated estimator target. Its feedback cadence was about 100 ms, versus 20 ms for Prague. These are full transport-mode comparisons with different queuing and feedback behavior. Higher GCC throughput coincided with higher delay and missing-packet counts; attribution to any single difference remains provisional."
+    },
+    {
+      "title": "Confirmed limits to the explanation",
+      "status": "confirmed",
+      "evidence_ids": [
+        "SENDER",
+        "WINDOW",
+        "LEGACY"
+      ],
+      "summary": "There is no configured 9 Mbps cap: the native maximum is 50 Mbps and actual applied targets in the repeat span 20.40\u201326.80 Mbps. No provisional loss was recorded in its CCFB states. Header accounting differs by about 0.32 Mbps in the aligned interval, far smaller than the target/output gap. CE response, periodic rate probing, timer lateness and processing can contribute, but none alone has been isolated as the remaining cause."
+    }
+  ],
+  "timeline": [
+    {
+      "at": "2026-11-15T18:21:20Z",
+      "event": "Saved GCC baseline collection began; three frozen fixed-source trials.",
+      "evidence_ids": [
+        "CAPTURE",
+        "GCC"
+      ]
+    },
+    {
+      "at": "2026-11-15T19:11:53Z",
+      "event": "Three new Prague timerfd trials began; outcomes retained as a separate cohort.",
+      "evidence_ids": [
+        "LEGACY",
+        "CAPTURE"
+      ]
+    },
+    {
+      "at": "2026-11-15T19:37:53Z",
+      "event": "Fresh explicit New Pion repeat began with the identical frozen binary.",
+      "evidence_ids": [
+        "SENDER",
+        "SOURCE"
+      ]
+    },
+    {
+      "at": "2026-11-15T19:38:25Z",
+      "event": "Fresh sender completed; final CE tail and receiver shutdown discrepancy retained.",
+      "evidence_ids": [
+        "TAIL"
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "title": "Expose and record feedback interval for both receivers; compare matched 20 ms and shorter-cadence conditions with source, rate, window and burst policy held fixed.",
+      "kind": "recommended",
+      "owner": "POC implementation / experiment owner",
+      "evidence_ids": [
+        "CCFB",
+        "MODEL"
+      ]
+    },
+    {
+      "title": "Validate reference-compatible window and RTT/report-hold handling before changing the admission policy; retain congestion safety and burst bounds.",
+      "kind": "recommended",
+      "owner": "Prague adapter / reference controller review",
+      "evidence_ids": [
+        "NATIVE",
+        "WINDOW"
+      ]
+    },
+    {
+      "title": "Record actual sender departures, feedback-window release timing, GCC queue age and a bounded source frame-age policy; distinguish estimator and pacer allowances.",
+      "kind": "recommended",
+      "owner": "Sender instrumentation",
+      "evidence_ids": [
+        "GCC",
+        "SOURCE",
+        "SENDER"
+      ]
+    },
+    {
+      "title": "Complete feedback drain and expected peer-close handling before using final totals as reconciled end-to-end evidence.",
+      "kind": "recommended",
+      "owner": "Endpoint lifecycle",
+      "evidence_ids": [
+        "TAIL"
+      ]
+    },
+    {
+      "title": "Obtain live bottleneck settings and controlled background-traffic conditions before a controller-only performance conclusion.",
+      "kind": "recommended",
+      "owner": "Experiment owner / lab operator",
+      "evidence_ids": [
+        "NETWORK"
+      ]
+    }
+  ],
+  "gaps": [
+    "A physical one-variable feedback-cadence A/B has not been performed.",
+    "No CPU profile, per-packet admission/UDP/NIC timing trace, or direct GCC queue-age measurement is available.",
+    "The idealized model is illustrative and does not establish achieved 25 Mbps media output.",
+    "Pure queue delay, decoded media latency, raw RTT variation and adaptive encoder targets remain unmeasured.",
+    "Lower offered load also reduces queueing; low transit alone does not prove full-utilization L4S success."
+  ]
+}

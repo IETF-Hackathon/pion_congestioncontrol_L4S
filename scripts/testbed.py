@@ -24,6 +24,8 @@ import socket
 import subprocess
 import sys
 
+from media_source import PROFILES, check_expected, inspect_ivf
+
 ROOT = Path(__file__).resolve().parents[1]
 FORKS = {
     "github.com/pion/interceptor": "github.com/altanai/interceptor",
@@ -68,6 +70,16 @@ def load_config(path):
     integer(config.get("initial_bitrate_bps"), "initial_bitrate_bps", 100000, 50000000)
     if not isinstance(config.get("video"), str) or not config["video"]:
         raise ValueError("video must name a VP8 IVF file on the sender")
+    expected = config.get("source_expectation", {})
+    if not isinstance(expected, dict):
+        raise ValueError("source_expectation must be an object")
+    for key in ("min_payload_bps", "max_payload_bps"):
+        if key in expected:
+            integer(expected[key], "source_expectation." + key, 1, 1_000_000_000)
+    if expected.get("min_payload_bps", 0) > expected.get("max_payload_bps", 1_000_000_000):
+        raise ValueError("source bitrate expectation range is reversed")
+    if "equal_frame_bytes" in expected:
+        integer(expected["equal_frame_bytes"], "source_expectation.equal_frame_bytes", 1, 1 << 20)
     bottleneck = config["bottleneck"]
     if not isinstance(bottleneck.get("name"), str) or not bottleneck["name"]:
         raise ValueError("bottleneck.name is required")
@@ -168,6 +180,7 @@ def check_receiver_health(health, config):
 
 def doctor(config, role):
     """Fail on a wrong local link, address, route, or sender signaling connection."""
+    source = inspect_source(config) if role == "sender" else None
     local = config[role]
     remote = config["sender" if role == "receiver" else "receiver"]
     interface = inspect_interface(local["interface"])
@@ -180,12 +193,55 @@ def doctor(config, role):
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
         probe.bind((local["ipv4"], 0))
     report = {"role": role, "local": local, "peer_ipv4": remote["ipv4"], "interface": interface, "route": route}
+    if source is not None:
+        report["source"] = source
     if role == "sender":
         health = http_json(remote["ipv4"], remote["signaling_port"], local["ipv4"])
         check_receiver_health(health, config)
         report["receiver_health"] = health
     report["path_validation"] = "Endpoint checks only; confirm the transparent bottleneck using operator counters/captures."
     return report
+
+
+def inspect_source(config):
+    """Measure the selected file and reject a smoke clip mislabeled as high load."""
+    source = inspect_ivf(ROOT / config["video"])
+    expected = config.get("source_expectation", {})
+    check_expected(source, expected.get("min_payload_bps"), expected.get("max_payload_bps"))
+    if "equal_frame_bytes" in expected and (not source["constant_frame_size"] or
+            source["largest_frame_bytes"] != expected["equal_frame_bytes"]):
+        raise ValueError("source does not match the required equal encoded-frame size")
+    manifest = Path(str(ROOT / config["video"]) + ".manifest.json")
+    if manifest.exists():
+        generation = json.loads(manifest.read_text())
+        if generation.get("status") != "validated" or generation.get("source", {}).get("sha256") != source["sha256"]:
+            raise ValueError("media generation manifest is failed or does not match the selected file")
+        source["generation"] = {key: generation.get(key) for key in
+                                ("profile", "command", "ffmpeg_version", "created_at_utc", "target_payload_bps")}
+    return source
+
+
+def prepare_config(config, profile, controller, output, video=None):
+    """Create a fresh profile config while retaining the assigned hosts and ports."""
+    p = PROFILES[profile]
+    prepared = dict(config, controller=controller or config["controller"], video=video or p["video"],
+                    initial_bitrate_bps=p["target_bps"], duration_seconds=30,
+                    source_expectation=dict(profile=profile, min_payload_bps=p["target_bps"]*85//100,
+                                            max_payload_bps=p["target_bps"]*115//100))
+    prepared["prague_pacing_backend"] = "auto"
+    source_path = ROOT / prepared["video"]
+    if source_path.is_file():
+        measured = inspect_ivf(source_path)
+        if measured["constant_frame_size"]:
+            prepared["source_expectation"]["equal_frame_bytes"] = measured["largest_frame_bytes"]
+    if prepared["controller"] == "prague":
+        prepared["feedback"] = "ccfb"
+    path = (ROOT / output).resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x") as stream:
+        json.dump(prepared, stream, indent=2)
+        stream.write("\n")
+    return prepared
 
 
 def endpoint_command(config, role, binary):
@@ -282,6 +338,7 @@ def run_peer(config, args):
                 "command": command, "host": platform.platform(), "checks": checks,
                 "git": git, "binary_sha256": sha256(binary), "video_sha256": clip_hash,
                 "dependencies": dependencies, "status": "starting",
+                "source": checks.get("source"),
                 "recording": {"directory": "recording", "trace": "recording/session-trace.jsonl",
                               "sdp": "Exact *.raw.sdp and credential-redacted *.sdp; private local artifacts"},
                 "capabilities": {"prague": config["controller"] == "prague", "ecn": config["controller"] == "prague"},
@@ -330,20 +387,35 @@ def run_peer(config, args):
 def main():
     """Dispatch offline planning, local network checks, or a recorded endpoint run."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("plan", "doctor", "run"))
+    parser.add_argument("action", choices=("prepare", "plan", "doctor", "run"))
     parser.add_argument("--config", default="testbed/local.json", help="shared lab JSON, relative to the repository")
     parser.add_argument("--role", choices=("receiver", "sender"))
     parser.add_argument("--binary", default="bin/pion-l4s")
     parser.add_argument("--run-id", help="same identifier on both hosts; existing logs are never overwritten")
+    parser.add_argument("--profile", choices=PROFILES, help="media profile for prepare")
+    parser.add_argument("--controller", choices=("gcc", "prague"), help="controller for the new prepared config")
+    parser.add_argument("--output-config", help="new profile config; existing files are never overwritten")
+    parser.add_argument("--video", help="optional existing repository-relative source override for prepare")
     args = parser.parse_args()
-    if args.action != "plan" and args.role is None:
+    if args.action in ("doctor", "run") and args.role is None:
         parser.error("--role is required for doctor/run")
+    if args.action == "prepare" and (not args.profile or not args.output_config):
+        parser.error("prepare requires --profile and --output-config")
     try:
         config = load_config(ROOT / args.config)
+        if args.action == "prepare":
+            prepared = prepare_config(config, args.profile, args.controller, args.output_config, args.video)
+            print(json.dumps(prepared, indent=2))
+            return 0
         if args.action == "plan":
             print("Planned downlink: sender -> servers switch -> " + config["bottleneck"]["name"] + " -> laptop receiver")
             for role in ("receiver", "sender"):
                 print(f"{role}: {shlex.join(endpoint_command(config, role, ROOT / args.binary))}")
+            if (ROOT / config["video"]).is_file():
+                source = inspect_source(config)
+                print(f"Nominal encoded source: {source['nominal_payload_bps']/1e6:.3f} Mbps, {source['fps']:g} fps; controller initial target: {config['initial_bitrate_bps']/1e6:g} Mbps")
+            else:
+                print("Source is not present locally; sender doctor will validate its bitrate and all frame bounds.")
             print("Diagram values are unverified. Confirm the path and active qdisc with the operator.")
             return 0
         if args.action == "doctor":

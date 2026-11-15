@@ -1,0 +1,132 @@
+{
+  "date": "2026-11-15",
+  "timezone": "America/Los_Angeles",
+  "scope": "Exact script copies used for morning runs and subsequent analysis; historical hardcoded paths retained for provenance, not portable entrypoints",
+  "files": [
+    {
+      "original": "results/raw/pion-compare-25m-20261115T172333Z/run-comparison.py",
+      "copy": "scripts/recorded/2026-11-15/pion-compare-25m-20261115T172333Z/run-comparison.py",
+      "sha256": "3ff4ff208581e39d48156cdb3c6fe2b563f6cc58baa127762c8fcbcffe2e0aa1"
+    },
+    {
+      "original": "results/raw/pion-compare-25m-20261115T172333Z/analyze-comparison.py",
+      "copy": "scripts/recorded/2026-11-15/pion-compare-25m-20261115T172333Z/analyze-comparison.py",
+      "sha256": "7c3debc640ac766c6152001719e80e69a732db04405a58b14e604f7f44a81839"
+    },
+    {
+      "original": "results/raw/pion-gcc-baseline-25m-20261115T181607Z/run-baseline.py",
+      "copy": "scripts/recorded/2026-11-15/pion-gcc-baseline-25m-20261115T181607Z/run-baseline.py",
+      "sha256": "2ed4c88b345a0e025d43c5dfda24c3b3765df8e88562ba89a812968b55bd1f46"
+    },
+    {
+      "original": "results/raw/pion-gcc-baseline-25m-20261115T181607Z/analyze-baseline.py",
+      "copy": "scripts/recorded/2026-11-15/pion-gcc-baseline-25m-20261115T181607Z/analyze-baseline.py",
+      "sha256": "760bbd89b1ec36309e003581ca9c322653784a1d98d66990a1d987121bc41d50"
+    },
+    {
+      "original": "results/raw/pion-gcc-baseline-25m-20261115T181607Z/capture_analysis.py",
+      "copy": "scripts/recorded/2026-11-15/pion-gcc-baseline-25m-20261115T181607Z/capture_analysis.py",
+      "sha256": "7c3debc640ac766c6152001719e80e69a732db04405a58b14e604f7f44a81839"
+    },
+    {
+      "original": "results/raw/pion-prague-pacing-v2-25m-20261115T190910Z/run-batch.py",
+      "copy": "scripts/recorded/2026-11-15/pion-prague-pacing-v2-25m-20261115T190910Z/run-batch.py",
+      "sha256": "ce66c7d7139d7995f8bae559ddf3f6a4e53d1cb8d1eccd28a9aaa1c3d7b11b48"
+    },
+    {
+      "original": "results/raw/pion-prague-pacing-v2-25m-20261115T190910Z/analyze-batch.py",
+      "copy": "scripts/recorded/2026-11-15/pion-prague-pacing-v2-25m-20261115T190910Z/analyze-batch.py",
+      "sha256": "563c65e1c0973afa75d8847f76950368f3b3b39d5ce3cc479a3a2ef47308b4a8"
+    },
+    {
+      "original": "results/raw/pion-prague-pacing-v2-25m-20261115T190910Z/capture_analysis.py",
+      "copy": "scripts/recorded/2026-11-15/pion-prague-pacing-v2-25m-20261115T190910Z/capture_analysis.py",
+      "sha256": "7c3debc640ac766c6152001719e80e69a732db04405a58b14e604f7f44a81839"
+    },
+    {
+      "original": "results/raw/new-pion-v2-repeat-25m-20261115T193712Z/run-repeat.py",
+      "copy": "scripts/recorded/2026-11-15/new-pion-v2-repeat-25m-20261115T193712Z/run-repeat.py",
+      "sha256": "371ce8558d127af03b7cf2c3f25e63f477c9b53f0fd41ab43c93a0da7098af2a"
+    },
+    {
+      "original": "results/raw/new-pion-v2-repeat-25m-20261115T193712Z/analyze-repeat.py",
+      "copy": "scripts/recorded/2026-11-15/new-pion-v2-repeat-25m-20261115T193712Z/analyze-repeat.py",
+      "sha256": "6658b7a10471bb053ef00ea36f2a0cfc478182fa0beb9fc1d6985722b8b52f47"
+    },
+    {
+      "original": "results/raw/new-pion-v2-repeat-25m-20261115T193712Z/capture_analysis.py",
+      "copy": "scripts/recorded/2026-11-15/new-pion-v2-repeat-25m-20261115T193712Z/capture_analysis.py",
+      "sha256": "7c3debc640ac766c6152001719e80e69a732db04405a58b14e604f7f44a81839"
+    },
+    {
+      "original": "results/raw/new-pion-v2-repeat-25m-20261115T193712Z/capture-run.py",
+      "copy": "scripts/recorded/2026-11-15/new-pion-v2-repeat-25m-20261115T193712Z/capture-run.py",
+      "sha256": "c4803e177ee5cf6f2abbc7811217caa36510530c54d87b34b8ec5e49055b14f7"
+    },
+    {
+      "original": "results/raw/throughput-rca-20261115/analyze_rca.py",
+      "copy": "scripts/recorded/2026-11-15/throughput-rca-20261115/analyze_rca.py",
+      "sha256": "d5eb8c6038f23932b1d1752ddfc660a1308437eef31c91d29600ecc9c09858c1"
+    },
+    {
+      "original": "results/raw/throughput-rca-20261115/build_record.py",
+      "copy": "scripts/recorded/2026-11-15/throughput-rca-20261115/build_record.py",
+      "sha256": "f1c2d4026861736f38b91c461bfae336e1553f89b0cb97dfebb2f10b1dc93ecd"
+    },
+    {
+      "original": "results/raw/throughput-rca-20261115/update_page.py",
+      "copy": "scripts/recorded/2026-11-15/throughput-rca-20261115/update_page.py",
+      "sha256": "cc83cffa532df9a444a4449d78ee9064fe798345ab803f047c4996ca7e660160"
+    },
+    {
+      "original": "results/raw/cross-traffic-audit-20261115/analyze.py",
+      "copy": "scripts/recorded/2026-11-15/cross-traffic-audit-20261115/analyze.py",
+      "sha256": "4862be5cb679a92d03a3082f559572aec5bb50968457be418125a408bc639a1d"
+    },
+    {
+      "original": "results/raw/preview-qa/check-layout.mjs",
+      "copy": "scripts/recorded/2026-11-15/preview-qa/check-layout.mjs",
+      "sha256": "eecbb5048ddc5938c599d591c474f4a0e9b79fe10e94e5c008da4e1d90d6e3dd"
+    },
+    {
+      "original": "results/raw/pion-compare-25m-20261115T172333Z/runtime/testbed-pinned.py",
+      "copy": "scripts/recorded/2026-11-15/pion-compare-25m-20261115T172333Z/testbed-pinned.py",
+      "sha256": "183e1299ead898a1bbc164a5e1948321d884d20d3cfffe31675bd3fdd6cc4d9e"
+    },
+    {
+      "original": "results/raw/pion-prague-pacing-v2-25m-20261115T190910Z/runtime/testbed-pinned.py",
+      "copy": "scripts/recorded/2026-11-15/pion-prague-pacing-v2-25m-20261115T190910Z/testbed-pinned.py",
+      "sha256": "cfe3f1f285ac50b6fe3abdfccadd3c96a0b18b60877fe82309c7fa44f0127113"
+    },
+    {
+      "original": "results/raw/pion-compare-25m-20261115T172333Z-prague/capture-run.py",
+      "copy": "scripts/recorded/2026-11-15/pion-compare-25m-20261115T172333Z-prague/capture-run.py",
+      "sha256": "5819a0482f54672bb1968110c868aeb02d09449857c358487da0e3eb7b12579a"
+    },
+    {
+      "original": "results/raw/pion-compare-25m-20261115T172333Z-gcc/capture-run.py",
+      "copy": "scripts/recorded/2026-11-15/pion-compare-25m-20261115T172333Z-gcc/capture-run.py",
+      "sha256": "f9d756363e63a838d1337b7086a49d37b1a821e35d173e70cdb60134f38f5557"
+    },
+    {
+      "original": "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/capture-run.py",
+      "copy": "scripts/recorded/2026-11-15/pion-gcc-baseline-25m-20261115T181607Z-r1/capture-run.py",
+      "sha256": "cc513e2ae333f52325e0111f7187dc0df4305be4ee06b0a8e26f8d5ed5f84ad6"
+    },
+    {
+      "original": "results/raw/pion-prague-pacing-v2-25m-20261115T190910Z-r1/capture-run.py",
+      "copy": "scripts/recorded/2026-11-15/pion-prague-pacing-v2-25m-20261115T190910Z-r1/capture-run.py",
+      "sha256": "a91eddc6533bcc171411e190874e65cb75dfe5dea5786139667caebe9980abf4"
+    },
+    {
+      "original": "results/offline/pion-gcc-baseline-25m-20261115T181607Z/download-pdfs.py",
+      "copy": "scripts/recorded/2026-11-15/offline-baseline/download-pdfs.py",
+      "sha256": "5a7bcb885092cfe565993895a9b3d6e1e64fc18e15ff0211a96b43bfcc84744a"
+    },
+    {
+      "original_remote": "selabs@192.168.1.216:/home/selabs/pion-l4s-interop/run-testbed.sh",
+      "copy": "scripts/recorded/2026-11-15/lab-sender/run-testbed.sh",
+      "sha256": "9a1444062d2c97b2a5fd8f7ed01b1ca1d7e0ae724a920f2658ac68dd7dd3b83f"
+    }
+  ]
+}

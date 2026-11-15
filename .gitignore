@@ -7,10 +7,13 @@
 .env.*
 !.env.example
 /media/*.ivf
+/media/*.manifest.json
 /go.work
 /go.work.sum
 /pion-l4s
 /testbed/local.json
+/testbed/*.local.json
 __pycache__/
 *.pyc
 /.cache/
+/archive/local/

@@ -1,5 +1,9 @@
 # Recorded transport previews
 
+The [equal-frame follow-up](pion-equalframes-25m-20261115T212125Z.md) records two new-pacer Prague trials with byte-identical 54,465-byte keyframes at nominal 60 fps (26.143200 Mbps offered payload). Steady media frame rates were 13.455 and 13.970 Mbps, P99 transit 13.054 and 13.031 ms, with zero missing RTP identities across the retained taps. Complete ingress frames had 47 packets / 57,943 wire bytes. Window waits remained about 11.4 seconds and source cadence fell to about 29 fps. Normal Prague ACK/RTT/CE/probing/loss behavior was preserved; provisional sender loss of 30/29 differs from capture loss. This new source differs from the historical GCC and variable-frame Prague source, so keep the two runs as a separate cohort. [JSON](pion-equalframes-25m-20261115T212125Z.json) · [CSV](pion-equalframes-25m-20261115T212125Z.csv).
+
+The [throughput RCA source record](pacing-throughput-rca-20261115.json) and [derived sender metrics/model](pacing-throughput-rca-20261115-metrics.json) support the RCA section in the main HTML page. It confirms persistent Prague sender window waits and source backpressure, identifies different GCC pacing/feedback defaults (including 100 ms versus 20 ms CCFB), and keeps the proposed window/report-hold mechanism provisional. The [chart](pacing-throughput-rca-20261115.png) uses aligned sender counter deltas; the model results are not new testbed measurements.
+
 The [explicit system 2 repeat](new-pion-v2-repeat-25m-20261115T193712Z.md) confirms that “New Pion: implementation under validation” is the implemented Linux timerfd/byte-credit scheduler used in the earlier three Prague trials. One fresh, separately captured repeat of that unchanged build measured 14.036 Mbps monitor frame throughput, 12.714 ms P99 transit, zero unmatched RTP identities and 2,216 capture CE marks versus 2,213 at the last sender feedback state. It is not pooled into the earlier cohort.
 
 The [new pacing comparison](pion-prague-pacing-v2-25m-20261115T190910Z.md) contrasts three captured Prague trials with the saved three-trial GCC baseline. Mean steady frame throughput was 13.120 Mbps for new Prague and 18.357 Mbps for GCC; the earlier single Prague observation was 8.856 Mbps. New Prague had zero unmatched RTP identities between taps and lower observed transit tails. See the [plot](pion-prague-pacing-v2-25m-20261115T190910Z.png), [JSON](pion-prague-pacing-v2-25m-20261115T190910Z.json) and [CSV](pion-prague-pacing-v2-25m-20261115T190910Z.csv) for per-run variation, CE feedback tails, waiting metrics and the unverified network/background-traffic limits. Frame throughput includes headers; these are exploratory transport results.
@@ -82,11 +86,13 @@ raw logs, original input clip, and build information are retained in this checko
 were preserved from the existing session runs; creating this preview did not
 rerun media or produce a new experiment.
 
-**The GCC testbed baseline has not been run.** No DualPI2 bottleneck or competing
-flow was present in these local checks. Prague and outer-IP ECN were not yet
+**These historical local checks did not use the physical testbed.** The three-trial
+GCC baseline and the later Prague comparisons are recorded above; the main
+[Experimental results section](../../index.html#results) now summarizes their
+measurements and the remaining POC gaps. No DualPI2 bottleneck or competing
+flow was present in the earlier local checks. Prague and outer-IP ECN were not yet
 implemented when these historical GCC runs were recorded; see the current
-[Prague implementation](../../docs/pion-l4s-interop/prague.md). Null POC metrics mean unavailable, not zero. The main experimental
-results table stays blank until the relevant measurements are collected.
+[Prague implementation](../../docs/pion-l4s-interop/prague.md). Null POC metrics mean unavailable, not zero.
 
 Use the [testbed guide](../../docs/pion-l4s-interop/testbed.md) for the next
 two-host run. First obtain the host addresses/interfaces, prepare identical

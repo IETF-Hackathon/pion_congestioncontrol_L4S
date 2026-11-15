@@ -34,10 +34,13 @@ bash scripts/build.sh
 Create a short repeatable input; keep generated media out of the contribution:
 
 ```sh
-mkdir -p media
-ffmpeg -f lavfi -i testsrc2=size=640x360:rate=30 -t 10 \
-  -c:v libvpx -b:v 500k -g 30 -an -f ivf media/sample.ivf
+bash scripts/make-media.sh --profile smoke
+# For the high-load experiment instead:
+bash scripts/make-media.sh --profile load25m
+python3 scripts/media_source.py inspect media/load25m.ivf --min-bps 21250000
 ```
+
+FFmpeg creates the file before a call; Pion reads and loops that encoded file. The generator writes `<video>.manifest.json` with the command, FFmpeg version, all-frame validation, measured rate and hash. Keep the same generated file for both controllers. The [source/deployment/capture tool guide](../../scripts/README.md) shows separate high-load configs and repository-owned senders; increasing only `--initial-bitrate` does not increase a smoke clip's load.
 
 ## Connect to the lab
 

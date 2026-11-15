@@ -30,7 +30,7 @@ jobs:
           go test -race ./...
       - name: Check lab helper
         run: |
-          bash -n scripts/build.sh scripts/make-media.sh
+          bash -n scripts/build.sh scripts/make-media.sh scripts/run-testbed.sh run-testbed.sh
           python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Build using the pinned forks
         run: bash scripts/build.sh

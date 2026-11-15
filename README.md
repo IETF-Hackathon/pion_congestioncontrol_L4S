@@ -35,6 +35,19 @@ The build selects [`altanai/interceptor`](https://github.com/altanai/interceptor
 
 ## Testbed scripts
 
+The current reusable tools and the exact scripts used for today's runs are indexed in [scripts/README.md](scripts/README.md). Use a named high-load source profile for the 25 Mbps experiments:
+
+```sh
+bash scripts/make-media.sh --profile load25m
+python3 scripts/testbed.py prepare --config testbed/local.json --profile load25m \
+  --controller prague --output-config testbed/load25m-prague.local.json
+python3 scripts/testbed.py plan --config testbed/load25m-prague.local.json
+```
+
+The no-argument media generator remains the 500 kbps smoke profile. `load25m` uses the recovered noisy 720p60 recipe, records the FFmpeg command/version and file hash, and validates actual encoded rate. Sender doctor rejects a 500 kbps clip in a high-load profile. The sender replays IVF; FFmpeg is not a live encoder during these calls. See the [historical 25 Mbps-source provenance](testbed/media-provenance/historical-25m.json).
+
+Use `scripts/sender.py` for an isolated Linux deployment and `scripts/capture_testbed.py` for a bounded captured call. Their `plan` actions are offline; `deploy` and `run` are explicit operations. The [exact morning scripts](scripts/recorded/2026-11-15/README.md) remain available for audit. The [archive inventory](archive/cleanup-20261115.json) maps the cleanup without moving evidence still referenced by this page or the reports.
+
 Use the Codex skill [`$pion-prague-testbed`](.agents/skills/pion-prague-testbed/SKILL.md) to rerun with a bottleneck recording. It starts one bounded lld-black4 capture, confirms capture is active before sending media, then correlates the new dashboard results with both endpoint logs. `testbed.py` by itself does not start a monitor capture.
 
 For a separate sender laptop, follow the [complete two-laptop procedure](docs/pion-l4s-interop/separate-laptop.md),

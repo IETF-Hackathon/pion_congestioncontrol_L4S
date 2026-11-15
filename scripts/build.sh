@@ -11,3 +11,4 @@ go mod download
 mkdir -p bin
 go build -mod=readonly -o bin/pion-l4s ./cmd/pion-l4s
 go version -m bin/pion-l4s
+python3 scripts/source_manifest.py write --binary bin/pion-l4s

@@ -1,0 +1,39 @@
+{
+  "profile": "equal-frames",
+  "ffmpeg_version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+  "target_payload_bps": 25000000,
+  "method": "Repeat one byte-identical VP8 keyframe; no padding or live encoding",
+  "controller": "Normal Prague; ACK/RTT, probing and loss response retained",
+  "repeated_frame_sha256": "43c7232b98b6733ae9e20dc317a4b1313008223c5890753811c0d0ebb4de4fb4",
+  "selected_quality": 42,
+  "decoder_validation": "All repeated frames decoded successfully",
+  "source": {
+    "bytes": 6537272,
+    "sha256": "c08bd5898408c9ab6785dc3999a00befed55290f6f4fd9b50372f17b969b5d49",
+    "width": 1280,
+    "height": 720,
+    "frames": 120,
+    "fps": 60.0,
+    "duration_seconds": 2.0,
+    "smallest_frame_bytes": 54465,
+    "largest_frame_bytes": 54465,
+    "unique_frame_sizes": 1,
+    "constant_frame_size": true,
+    "keyframe_count": 120,
+    "interframe_count": 0,
+    "nominal_payload_bps": 26143200.0
+  },
+  "generation_tool": "scripts/equal_frame_source.py",
+  "cli": [
+    "python3",
+    "scripts/equal_frame_source.py",
+    "--output",
+    "media/equal25m.ivf"
+  ],
+  "source_path": "media/equal25m.ivf",
+  "unique_payloads": 1,
+  "all_timestamps_sequential": true,
+  "exact_generation_manifest": "media/equal25m.ivf.manifest.json",
+  "experiment": "pion-equalframes-25m-20261115T212125Z",
+  "note": "Generation ran offline. Matched trials reuse one file and hash. The full original recipe and attempts are retained in the ignored generation manifest."
+}

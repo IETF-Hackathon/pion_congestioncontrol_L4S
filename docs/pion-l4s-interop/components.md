@@ -12,7 +12,7 @@ FFmpeg runs on the Mac to create the input, using its libvpx VP8 encoder. It wri
 
 The source's nominal bitrate comes from encoded frame bytes divided by playback duration. During a call, the Pion application loads the file into memory and loops the stored frames using a frame ticker. It cannot ask an already encoded file to change quality or bitrate. Synchronous pacing can block the caller and change the actual frame production cadence.
 
-The original 0.5 Mbps generator is [scripts/make-media.sh](../../scripts/make-media.sh). The higher-rate sweep used separate generated files; it preserved the original clip.
+The original 0.5 Mbps smoke generator and the recovered high-load sweep recipes are now named profiles in [scripts/make-media.sh](../../scripts/make-media.sh) / [media_source.py](../../scripts/media_source.py). Use `--profile load25m` for the two-second noisy 720p60 input. [Historical provenance](../../testbed/media-provenance/historical-25m.json) identifies the original 23.950988 Mbps clip; regenerate once and share its hash for a new matched pair. The [tool index](../../scripts/README.md) covers generation, sender deployment, capture and the exact scripts used in today's runs.
 
 ## Runtime media pipeline
 
