@@ -91,6 +91,8 @@ The supplied topology labels `lld-black4` as **20 Mbps with 10 ms added in each 
 
 See [the Pion-to-UDP-Prague comparison](docs/pion-l4s-interop/udp-prague-pion-mapping.md) for how the example sender and receiver map to the planned WebRTC endpoints, and which feedback and ECN adaptations are required.
 
+Track the implementation work in [todo/README.md](todo/README.md). The WebRTC module is pinned to `v4.2.26` and interceptor to `v0.1.51`.
+
 ## Implementation roadmap
 
 - Pion sender and receiver, starting from [Pion's example applications](https://github.com/pion/example-webrtc-applications).
