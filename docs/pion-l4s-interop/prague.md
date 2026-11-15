@@ -2,8 +2,69 @@
 
 The `feat/prague-cc-testbed` branch implements `--controller prague` on both
 Pion peers. This is an experimental integration for the direct IPv4 lab path.
-The physical `lld-black4` experiment still needs a separate server-side host;
-reachable management SSH services are not a substitute for that host.
+The separate server-side host is now installed at `selabs@192.168.1.216` on
+`enp1s0`, with the Mac receiver at `192.168.1.79` on `en7`. A two-host check has
+observed media delivery and CE feedback into Prague; full congestion validation
+and independent bottleneck path/settings evidence remain pending.
+
+## Sequence diagram
+
+Rendered previews: [PNG](../images/pion-prague-sequence.png) and
+[SVG](../images/pion-prague-sequence.svg). See [SDP and feedback recordings](recordings.md)
+for the offer/answer artifacts and actual Pion controller-dispatch trace.
+
+This sequence describes the experimental Prague/CCFB call between the physical
+Linux sender and Mac receiver. The network participant represents the intended
+lab path; the exact forwarding path, active qdisc and device introducing CE
+still need independent operator evidence. Initial signaling arrows are logical
+exchanges between endpoints.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Prague controller
+    participant S as Linux Pion sender<br/>192.168.1.216
+    participant N as Lab network<br/>lld-black4 path intended
+    participant R as Mac Pion receiver<br/>192.168.1.79
+
+    Note over C,S: Same sender process, GCC disabled for this run
+    R->>R: Start receiver and HTTP signaling
+    S->>R: GET /healthz
+    R-->>S: Prague, CCFB and ECN capability confirmed
+    S->>R: POST /offer with SDP and gathered ICE candidates
+    R-->>S: SDP answer with gathered ICE candidates
+    S->>R: ICE checks and DTLS handshake
+    R-->>S: Secure media transport established
+    Note over S,R: Observed ICE pair .216:50000 and .79:50000
+
+    loop Fixed VP8 media and periodic feedback
+        S->>C: Request pacing/window admission for RTP packet
+        C-->>S: Allow send when rate and window permit
+        S->>N: SRTP over UDP, outer IP marked ECT(1)
+        N->>R: Deliver SRTP with received ECT(1) or CE
+        R->>R: Save socket ECN bits and arrival time
+        R->>R: Authenticate SRTP, correlate SSRC and sequence
+        R->>R: Record arrival and ECN for RFC 8888 feedback
+        R-->>N: SRTCP CCFB with arrival and ECN reports, Non-ECT
+        N-->>S: Return congestion feedback
+        S->>C: Process packet reports, CE counts and RTT samples
+        C-->>S: Recalculate pacing rate and window
+    end
+
+    Note over S,R: Observed 30-second sender run: 2078 RTP received<br/>2076 ECT(1), 2 CE, sender Prague state recorded 2 CE
+    Note over N,R: Marking device and live bottleneck settings remain unverified
+    Note over C,S: Source stays fixed, encoder adaptation remains pending
+
+    opt Invalid ECN or feedback timeout
+        S->>S: Stop the run with an error
+    end
+```
+
+The rate/window update is implemented; this diagram does not claim a measured
+rate reduction or sustained congestion response in the light-load physical run.
+The error branch shows the implemented failure policy, rather than an error
+observed in that run. General SDP ECN negotiation and dynamic controller fallback
+remain pending. See the [recorded run](../../results/preview/prague-lab-selabs216-20261114.json).
 
 ## Controller and packet path
 
@@ -43,6 +104,10 @@ full RFC conformance remain unverified.
 Non-ECT/ECT(0) feedback, two seconds without fresh feedback, missing ECN metadata,
 or history exhaustion ends the media run with an error. This integration stops
 on ECN failure instead of dynamically switching controllers in the same session.
+
+## Proposed pacing scheduler
+
+The [scheduler design](pacing-scheduler-design.md) records the current approximately 9 Mbps observation and proposes bounded elapsed-time pacing with a precise Linux wait backend. It includes the current/proposed comparison, burst/window and cancellation rules, measurement points, and the acceptance gate. The runtime change and its performance verification remain pending.
 
 ## Build and local verification
 
@@ -84,17 +149,30 @@ python3 scripts/testbed.py doctor --role sender
 python3 scripts/testbed.py run --role sender --run-id prague-01
 ```
 
-On 14 November the laptop had active `en7`, address `192.168.1.79`; the user
-confirmed attachment behind lld-black4 with DualPI2/SRM. The exact active
-qdisc and shaping settings still need to be recorded for measured results.
-No sender IP/login has been supplied. The diagram's `.75`, `.71`, `.51` and
-`.1` answer SSH but identify network equipment. The existing `.212` endpoint
-did not answer SSH/HTTP during a bounded reachability check. Do not infer a
-server-side compute host or valid credentials from these observations.
+On 14 November at 17:00 PST, a 30-second Prague/CCFB sender run completed with
+exit code 0 from the separate Ubuntu host to the Mac. The selected ICE pair was
+`192.168.1.216:50000` ↔ `192.168.1.79:50000`. Receiver counters reached 2,078 RTP
+packets: 2,076 ECT(1), 2 CE and 0 Non-ECT. The sender's last periodic sample
+recorded 924 congestion-feedback reports and 2 CE in Prague state, with no
+controller failure. Sender and receiver counters have independent sampling
+times; they are not a synchronized final packet accounting or loss measurement.
+
+The user confirms the Mac's attachment behind lld-black4 and the server's
+attachment to the servers switch. The active qdisc, shaping settings, marking
+device and transparent forwarding path still need operator captures/counters.
+The supplied diagram's `.75` is management, not a Pion peer. No Pion program
+was installed on EdgeRouterX or a switch. See the [current setup overlay](../images/pion-current-lab-setup.md)
+and [run summary with hashes and samples](../../results/preview/prague-lab-selabs216-20261114.json).
+
+The sender lives at `/home/selabs/pion-l4s-interop` and uses a private Go toolchain
+through `./run-testbed.sh`. Its build, unit/race checks, vet, nine Python runner
+tests and server-local Prague check passed before the physical call. Installation
+was under the user's home directory, without changes to lab equipment or qdiscs.
 
 The fixed 500 kbps sample establishes transport at light load. A controller
 target can exceed offered media rate on this application-limited source; it is
 not measured link capacity. Frame production can slow while the synchronous
 Prague pacer waits. Adaptive encoding, bounded latency under changing capacity,
 loaded-link fairness, queue telemetry and complete POC metrics remain work to do.
-No physical Prague testbed result is claimed.
+The physical result above establishes the endpoint ECN feedback loop. It does
+not establish sustained congestion response, capacity, fairness or RFC conformance.

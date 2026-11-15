@@ -255,6 +255,7 @@ def run_peer(config, args):
         raise ValueError("run-id must be 1..80 letters, digits, dots, underscores or hyphens")
     folder = ROOT / "results" / "raw" / run_id / args.role
     folder.mkdir(parents=True, exist_ok=False)
+    command += ["--record-dir", str(folder / "recording")]
     git = {}
     if (ROOT / ".git").exists():
         git = {"commit": capture(["git", "-C", str(ROOT), "rev-parse", "HEAD"]),
@@ -263,6 +264,8 @@ def run_peer(config, args):
                 "command": command, "host": platform.platform(), "checks": checks,
                 "git": git, "binary_sha256": sha256(binary), "video_sha256": clip_hash,
                 "dependencies": dependencies, "status": "starting",
+                "recording": {"directory": "recording", "trace": "recording/session-trace.jsonl",
+                              "sdp": "Exact *.raw.sdp and credential-redacted *.sdp; private local artifacts"},
                 "capabilities": {"prague": config["controller"] == "prague", "ecn": config["controller"] == "prague"},
                 "measurement_limits": {"adaptive_encoder": False,
                                        "queue_delay_ms": None, "encoder_target_bps": None}}

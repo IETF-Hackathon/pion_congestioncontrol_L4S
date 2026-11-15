@@ -36,6 +36,7 @@ import (
 
 type config struct {
 	role, listen, peer, iface, localIP, video, controller, feedback string
+	recordDir                                                       string
 	loopback                                                        bool
 	duration                                                        time.Duration
 	initialRate                                                     int
@@ -56,6 +57,7 @@ func main() {
 	flag.StringVar(&c.video, "video", "", "constant-frame-rate VP8 IVF input (sender only)")
 	flag.StringVar(&c.controller, "controller", "gcc", "gcc or prague; use the same value on both peers")
 	flag.StringVar(&c.feedback, "feedback", "ccfb", "ccfb (RFC 8888) or twcc; use the same value at both ends")
+	flag.StringVar(&c.recordDir, "record-dir", "", "optional private directory for SDP and controller-feedback recordings")
 	flag.BoolVar(&c.loopback, "loopback", false, "include loopback ICE candidates for local smoke checks")
 	flag.DurationVar(&c.duration, "duration", 0, "whole-process time limit including setup; zero runs until Ctrl+C")
 	flag.IntVar(&c.initialRate, "initial-bitrate", 1_000_000, "initial controller target in bits/second")
@@ -166,32 +168,58 @@ type endpoint struct {
 	log             *slog.Logger
 	ecn             *ecnSocket
 	mux             ice.UDPMux
+	recording       *sessionRecorder
 }
 
 // newEndpoint configures codecs, the selected controller, feedback and ICE.
 func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
-	e := &endpoint{connected: make(chan struct{}), tracks: make(chan *webrtc.TrackRemote, 1), errors: make(chan error, 1), log: log}
+	recording, err := newSessionRecorder(c.recordDir)
+	if err != nil {
+		return nil, err
+	}
+	owned := false
+	defer func() {
+		if !owned {
+			_ = recording.close()
+		}
+	}()
+	e := &endpoint{connected: make(chan struct{}), tracks: make(chan *webrtc.TrackRemote, 1), errors: make(chan error, 1), log: log, recording: recording}
 	m, registry := &webrtc.MediaEngine{}, &interceptor.Registry{}
 	if err := m.RegisterDefaultCodecs(); err != nil {
 		return nil, fmt.Errorf("register codecs: %w", err)
 	}
 	if c.role == "sender" {
 		factory, err := cc.NewInterceptor(func() (cc.BandwidthEstimator, error) {
+			var estimator cc.BandwidthEstimator
+			var err error
 			if c.controller == "prague" {
-				return prague.New(c.initialRate)
+				estimator, err = prague.New(c.initialRate)
+			} else {
+				estimator, err = gcc.NewSendSideBWE(gcc.SendSideBWEInitialBitrate(c.initialRate))
 			}
-			return gcc.NewSendSideBWE(gcc.SendSideBWEInitialBitrate(c.initialRate))
+			if err != nil {
+				return nil, err
+			}
+			if recording != nil {
+				return &recordedEstimator{BandwidthEstimator: estimator, recorder: recording, controller: c.controller}, nil
+			}
+			return estimator, nil
 		})
 		if err != nil {
 			return nil, fmt.Errorf("create controller: %w", err)
 		}
-		factory.OnNewPeerConnection(func(_ string, estimator cc.BandwidthEstimator) { e.estimator = estimator })
+		factory.OnNewPeerConnection(func(_ string, estimator cc.BandwidthEstimator) {
+			// Keep the real controller for its existing shutdown and polling path.
+			if observed, ok := estimator.(*recordedEstimator); ok {
+				estimator = observed.BandwidthEstimator
+			}
+			e.estimator = estimator
+		})
 		registry.Add(factory)
 	}
 	if err := webrtc.ConfigureRTCPReports(registry); err != nil {
 		return nil, fmt.Errorf("configure reports: %w", err)
 	}
-	var err error
 	if c.controller == "prague" {
 		e.ecn, err = newECNSocket(c)
 		if err != nil {
@@ -199,7 +227,7 @@ func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 		}
 		m.RegisterFeedback(webrtc.RTCPFeedback{Type: webrtc.TypeRTCPFBACK, Parameter: "ccfb"}, webrtc.RTPCodecTypeVideo)
 		if c.role == "receiver" {
-			registry.Add(&ecnFeedbackFactory{socket: e.ecn, report: e.report})
+			registry.Add(&ecnFeedbackFactory{socket: e.ecn, report: e.report, recording: recording})
 		}
 	} else if c.feedback == "ccfb" {
 		err = webrtc.ConfigureCongestionControlFeedback(m, registry)
@@ -258,6 +286,7 @@ func newEndpoint(c config, log *slog.Logger) (*endpoint, error) {
 		default:
 		}
 	})
+	owned = true
 	return e, nil
 }
 
@@ -288,6 +317,9 @@ func (e *endpoint) logSelectedPair() {
 		return
 	}
 	e.log.Info("selected ICE pair", "local", pair.Local.String(), "remote", pair.Remote.String())
+	if err := e.recording.event("selected_ice_pair", map[string]any{"local": pair.Local.String(), "remote": pair.Remote.String()}); err != nil {
+		e.report(err)
+	}
 }
 
 // report queues the first pending asynchronous error without blocking callbacks.
@@ -311,6 +343,9 @@ func (e *endpoint) close() {
 		_ = e.mux.Close()
 	}
 	e.wg.Wait() // Closing the PeerConnection unblocks the RTP/RTCP readers.
+	if err := e.recording.close(); err != nil {
+		e.log.Warn("close session recording", "error", err)
+	}
 }
 
 // run validates startup, owns endpoint cleanup, and dispatches the chosen role.
@@ -326,6 +361,10 @@ func run(ctx context.Context, c config, log *slog.Logger) error {
 		return err
 	}
 	defer e.close()
+	if err := e.recording.event("session_started", map[string]any{"role": c.role, "controller": c.controller, "feedback": c.feedback,
+		"interface": c.iface, "local_ip": c.localIP, "encoder_adaptation": false}); err != nil {
+		return err
+	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -365,7 +404,7 @@ func receive(ctx context.Context, c config, e *endpoint) error {
 			return
 		}
 		// A failed offer consumes this single-session receiver; fail visibly and restart.
-		answer, offerErr := answerOffer(r.Context(), e.pc, http.MaxBytesReader(w, r.Body, 1<<20))
+		answer, offerErr := answerOffer(r.Context(), e.pc, http.MaxBytesReader(w, r.Body, 1<<20), e.recording)
 		if offerErr != nil {
 			http.Error(w, "offer failed; inspect receiver logs", http.StatusBadRequest)
 			e.report(offerErr)
@@ -437,7 +476,7 @@ func receive(ctx context.Context, c config, e *endpoint) error {
 }
 
 // answerOffer applies one SDP offer and returns an answer with gathered candidates.
-func answerOffer(ctx context.Context, pc *webrtc.PeerConnection, body io.Reader) (*webrtc.SessionDescription, error) {
+func answerOffer(ctx context.Context, pc *webrtc.PeerConnection, body io.Reader, recording *sessionRecorder) (*webrtc.SessionDescription, error) {
 	var offer webrtc.SessionDescription
 	if err := json.NewDecoder(body).Decode(&offer); err != nil {
 		return nil, fmt.Errorf("decode offer: %w", err)
@@ -445,14 +484,23 @@ func answerOffer(ctx context.Context, pc *webrtc.PeerConnection, body io.Reader)
 	if offer.Type != webrtc.SDPTypeOffer {
 		return nil, fmt.Errorf("expected an SDP offer")
 	}
+	if err := recording.sdp("remote", &offer); err != nil {
+		return nil, err
+	}
 	if err := pc.SetRemoteDescription(offer); err != nil {
 		return nil, fmt.Errorf("set remote offer: %w", err)
+	}
+	if err := recording.event("remote_description_applied", map[string]any{"type": "offer"}); err != nil {
+		return nil, err
 	}
 	answer, err := pc.CreateAnswer(nil)
 	if err != nil {
 		return nil, fmt.Errorf("create answer: %w", err)
 	}
 	if err := gather(ctx, pc, answer); err != nil {
+		return nil, err
+	}
+	if err := recording.sdp("local", pc.LocalDescription()); err != nil {
 		return nil, err
 	}
 	return pc.LocalDescription(), nil
@@ -473,7 +521,7 @@ func gather(ctx context.Context, pc *webrtc.PeerConnection, description webrtc.S
 }
 
 // signalSender exchanges a complete SDP offer/answer over bounded HTTP signaling.
-func signalSender(ctx context.Context, pc *webrtc.PeerConnection, peer string) error {
+func signalSender(ctx context.Context, pc *webrtc.PeerConnection, peer string, recording *sessionRecorder) error {
 	setup, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	offer, err := pc.CreateOffer(nil)
@@ -481,6 +529,9 @@ func signalSender(ctx context.Context, pc *webrtc.PeerConnection, peer string) e
 		return fmt.Errorf("create offer: %w", err)
 	}
 	if err := gather(setup, pc, offer); err != nil {
+		return err
+	}
+	if err := recording.sdp("local", pc.LocalDescription()); err != nil {
 		return err
 	}
 	body, err := json.Marshal(pc.LocalDescription())
@@ -509,8 +560,14 @@ func signalSender(ctx context.Context, pc *webrtc.PeerConnection, peer string) e
 	if answer.Type != webrtc.SDPTypeAnswer {
 		return fmt.Errorf("expected an SDP answer")
 	}
+	if err := recording.sdp("remote", &answer); err != nil {
+		return err
+	}
 	if err := pc.SetRemoteDescription(answer); err != nil {
 		return fmt.Errorf("set remote answer: %w", err)
+	}
+	if err := recording.event("remote_description_applied", map[string]any{"type": "answer"}); err != nil {
+		return err
 	}
 	return setup.Err()
 }
@@ -520,6 +577,10 @@ func signalSender(ctx context.Context, pc *webrtc.PeerConnection, peer string) e
 func send(ctx context.Context, c config, e *endpoint) error {
 	if c.controller == "prague" {
 		if err := checkPragueReceiver(ctx, c); err != nil {
+			return err
+		}
+		if err := e.recording.event("receiver_capability_verified", map[string]any{"method": "paired HTTP /healthz",
+			"controller": "prague", "feedback": "ccfb", "ecn_observation": true, "general_sdp_ecn_negotiation": false}); err != nil {
 			return err
 		}
 	}
@@ -553,7 +614,7 @@ func send(ctx context.Context, c config, e *endpoint) error {
 			}
 		}
 	}()
-	if err := signalSender(ctx, e.pc, c.peer); err != nil {
+	if err := signalSender(ctx, e.pc, c.peer, e.recording); err != nil {
 		return err
 	}
 	connectTimer := time.NewTimer(15 * time.Second)

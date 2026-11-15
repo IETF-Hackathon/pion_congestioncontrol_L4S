@@ -3,8 +3,10 @@
 This workflow runs GCC or experimental Prague using **Altanai's ICE and
 interceptor forks**. The application supplies Prague pacing and socket ECN
 with ECN-aware RFC 8888 feedback. See [Prague integration](prague.md).
-Adaptive encoding, physical lab validation, and the full six-metric comparison
-remain pending. No physical lab results have been collected.
+Adaptive encoding, independent bottleneck validation, and the full six-metric
+comparison remain pending. A [physical endpoint check](../../results/preview/prague-lab-selabs216-20261114.json)
+received 2,078 RTP including 2 CE marks that reached sender Prague state, but it
+did not start a monitor capture. That run has no matching lld-black4 dashboard result.
 
 See the [recorded local-run preview](../../index.html#preview) for the GCC/CCFB
 and GCC/TWCC checks already completed on one Mac. They exercised the controller
@@ -27,8 +29,10 @@ the separate monitor9 client switch or monitor10 Netflix branch. The diagram
 labels 20 Mbps and 10 ms added delay per direction. Ask the operator for the
 actual ports, host addresses, active qdisc mode (DualPI2/SRM), and live shaping
 settings. Put competing traffic through the **same** bottleneck for contention
-tests. The sender host is not supplied by this repository and does not run on
-the switch or monitor; arrange a host attached to the servers switch.
+tests. The available separate sender is `selabs@192.168.1.216`, Ethernet
+`enp1s0`, with the Mac receiver at `192.168.1.79`, Ethernet `en7`. Recheck these
+assigned addresses before rerunning. Pion runs on these hosts, not on the switch
+or monitor.
 
 The monitor's IP is a management address, not the laptop's IP, not a media peer,
 and not an assumed default gateway. The existing `.212` client belongs to a
@@ -145,7 +149,17 @@ above the pacer rate can create a sender queue. Add rate adaptation and a bounde
 queue policy before running a valid GCC/Prague performance comparison. Use
 the identical clip hash and source settings for the matched controller runs.
 
-## 5. Check the actual media path and retain evidence
+## 5. Record the bottleneck as well as the endpoints
+
+Use the [Pion Prague capture skill](../../.agents/skills/pion-prague-testbed/SKILL.md)
+for the capture-backed rerun. It prepares a fresh receiver and sender checks,
+starts a uniquely named bounded capture in lld-black4's UI, confirms capture is
+actually active, and only then starts media. The endpoint helper does not start
+that recording automatically. A folder can appear before capture begins, so
+directory creation alone is not readiness. Afterward, wait for analysis and
+verify the new dashboard folder contains the selected endpoint UDP flow.
+
+## 6. Check the actual media path and retain evidence
 
 Each host saves files under `results/raw/<run-id>/<role>/`:
 

@@ -1,0 +1,1349 @@
+{
+  "schema_version": 1,
+  "baseline_id": "pion-gcc-baseline-25m-20261115T181607Z",
+  "scope": "Three repeated GCC/CCFB fixed-source physical baseline trials at 23.950988 Mbps encoded source and 25 Mbps initial controller target; no added contention or qdisc changes",
+  "source_commit": "0059d63a5285e17d022a0df1c210b5997fa13d01",
+  "source": {
+    "path": "results/raw/pion-compare-25m-20261115T172333Z/media/25m.ivf",
+    "sha256": "cbe29e3da7d7b256fed6b7e7aff519d9263900d15d4b9a05459331e15f975f2b",
+    "bytes": 5989219,
+    "frames": 120,
+    "fps": 60.0,
+    "duration_seconds": 2.0,
+    "nominal_payload_bps": 23950988.0,
+    "largest_frame_bytes": 644064
+  },
+  "receiver_binary_sha256": "d0c3ec8e848d429fb5c5195ef1ab724e156f31ae8caaf03a1487d32c3650a85f",
+  "sender_binary_sha256": "10a351e678975732d0edf01cae5591ddfd5ebf5e820d1986aaee1fa69e89c71d",
+  "runs": [
+    {
+      "controller": "gcc",
+      "run_id": "pion-gcc-baseline-25m-20261115T181607Z-r1",
+      "source_mbps": 23.950988,
+      "initial_controller_target_mbps": 25,
+      "dashboard_result_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r1_2026_11_15_19_21/",
+      "flow_plot_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r1_2026_11_15_19_21/2_downstream.pdf",
+      "selected_ice_pair": {
+        "time": "2026-11-15T11:21:20.831268661-07:00",
+        "level": "INFO",
+        "msg": "selected ICE pair",
+        "role": "sender",
+        "local": "udp4 host 192.168.1.216:50053 (resolved: 192.168.1.216:50053)",
+        "remote": "udp4 host 192.168.1.79:50053 (resolved: 192.168.1.79:50053)"
+      },
+      "sender_started_at_utc": "2026-11-15T18:21:20.644925+00:00",
+      "sender_finished_at_utc": "2026-11-15T18:21:50.684651+00:00",
+      "sender_started_at_local": "2026-11-15T10:21:20.644925-08:00",
+      "capture_partial": false,
+      "capture_start_attempts": 1,
+      "media_interval_seconds": 29.830047369003296,
+      "media_first_at_utc": "2026-11-15T18:21:20.855890+00:00",
+      "monitor_udp_frame_mbps": 18.559,
+      "delivered_vp8_frame_mbps": 18.66267314675743,
+      "steady_delivered_vp8_frame_mbps": 18.66188352,
+      "ingress_rtp_packets": 64958,
+      "egress_rtp_packets": 55953,
+      "matched_unique_rtp_packets": 55953,
+      "missing_unique_rtp_packets": 9005,
+      "missing_media_percent": 13.862803657748083,
+      "ingress_duplicate_media_packets": 0,
+      "egress_duplicate_media_packets": 0,
+      "unpaired_egress_rtp_packets": 0,
+      "monitor_udp_drops": 9013,
+      "ingress_media_ecn_counts": {
+        "0": 64958,
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "egress_media_ecn_counts": {
+        "0": 55953,
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "new_ce_between_vantages": 0,
+      "sender_processed_ce_last_feedback": null,
+      "sender_provisional_loss_last_feedback": null,
+      "sender_provisional_loss_max": null,
+      "transit_p50_ms": 20.539045333862305,
+      "transit_p99_ms": 126.08585357666006,
+      "large_ingress_packet_gap_p50_us": 0.2384185791015625,
+      "receiver_last_periodic_sample": {
+        "time": "2026-11-15T10:21:56.35267-08:00",
+        "level": "INFO",
+        "msg": "receiver metrics",
+        "role": "receiver",
+        "packets": 55953,
+        "rtp_payload_bytes": 65671843,
+        "rtp_payload_mbps": 0,
+        "ce_count": null,
+        "ect1_count": null,
+        "nonect_count": null
+      },
+      "sender_last_periodic_sample": {
+        "time": "2026-11-15T11:21:49.831721612-07:00",
+        "level": "INFO",
+        "msg": "sender metrics",
+        "role": "sender",
+        "gcc_target_bps": 23124540,
+        "rtcp_batches": 314,
+        "congestion_feedback_reports": 286,
+        "gcc": {
+          "averageLoss": 1.1034574308625898e-06,
+          "delayEstimate": 5051.181,
+          "delayMeasurement": 2814.857,
+          "delayTargetBitrate": 28766508,
+          "delayThreshold": 107.662,
+          "lossTargetBitrate": 23124540,
+          "state": "increase",
+          "usage": "normal"
+        },
+        "encoder_target_bps": null,
+        "ce_count": null
+      },
+      "sender_last_feedback_state": {
+        "averageLoss": 0.37065733230178594,
+        "delayEstimate": -115.87,
+        "delayMeasurement": -0.068,
+        "delayTargetBitrate": 31067828,
+        "delayThreshold": 118.552,
+        "lossTargetBitrate": 1603002,
+        "state": "increase",
+        "usage": "normal"
+      },
+      "feedback_dispatch_count": 323,
+      "feedback_trace_truncated": false,
+      "process_outcomes": {
+        "sender": {
+          "status": "exited",
+          "exit_code": 0,
+          "binary_sha256": "10a351e678975732d0edf01cae5591ddfd5ebf5e820d1986aaee1fa69e89c71d",
+          "video_sha256": "cbe29e3da7d7b256fed6b7e7aff519d9263900d15d4b9a05459331e15f975f2b"
+        },
+        "receiver": {
+          "status": "interrupted",
+          "exit_code": 0,
+          "binary_sha256": "d0c3ec8e848d429fb5c5195ef1ab724e156f31ae8caaf03a1487d32c3650a85f",
+          "video_sha256": null
+        }
+      },
+      "monitor_downstream_summary": {
+        "Flow Number": "2",
+        "Flow ID": "UDP [192.168.1.216 50053] to [192.168.1.79 50053]",
+        "Packet Delay P0 (ms)": "10.004",
+        "Packet Delay P50 (ms)": "20.537",
+        "Packet Delay P90 (ms)": "50.171",
+        "Packet Delay P99 (ms)": "126.096",
+        "Packet Delay P99.9 (ms)": "186.200",
+        "PDV P99 (ms)": "116.082",
+        "PDV P99.9 (ms)": "176.189",
+        "Mean data rate (Mbps)": "18.559",
+        "P10 of data rate (Mbps)": "0.943",
+        "P10 % of mean": "5.2",
+        "Ramp time to 90% Tput (ms)": "200",
+        "Num Packets": "65025",
+        "Num NotECT": "56012",
+        "Num ECT0": "0",
+        "Num ECT1": "0",
+        "Num CE": "0",
+        "Dropped Packets": "9013",
+        "Missing Packets": "0",
+        "Num Sanctioned": "0"
+      },
+      "monitor_upstream_summary": {
+        "Flow Number": "2",
+        "Flow ID": "UDP [192.168.1.79 50053] to [192.168.1.216 50053]",
+        "Packet Delay P0 (ms)": "10.004",
+        "Packet Delay P50 (ms)": "10.075",
+        "Packet Delay P90 (ms)": "10.371",
+        "Packet Delay P99 (ms)": "58.270",
+        "Packet Delay P99.9 (ms)": "114.620",
+        "PDV P99 (ms)": "48.263",
+        "PDV P99.9 (ms)": "104.616",
+        "Mean data rate (Mbps)": "0.097",
+        "P10 of data rate (Mbps)": "0.021",
+        "P10 % of mean": "22.6",
+        "Ramp time to 90% Tput (ms)": "400",
+        "Num Packets": "394",
+        "Num NotECT": "390",
+        "Num ECT0": "0",
+        "Num ECT1": "0",
+        "Num CE": "0",
+        "Dropped Packets": "4",
+        "Missing Packets": "0",
+        "Num Sanctioned": "0"
+      },
+      "raw_artifacts": {
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/2_downstream.pdf": {
+          "bytes": 232264,
+          "sha256": "f16a1e684a3ae77844af4116db3c1bb86dc80d42b65936cf0a4233527be7a989"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/capture_nsi.pcapng": {
+          "bytes": 12530624,
+          "sha256": "ace8203ccc6ef3429f0f65b44c9acbe8d930c87b3ff8b5d57503aa641107e6f1"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/summary_table_upstream.csv": {
+          "bytes": 1762,
+          "sha256": "685d2cb868c3e40476b09ff06dbd4d898ad33f5eead757b9ddc77b7e471f9b57"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/UDP [192.168.1.79 50053] to [192.168.1.216 50053]latency.csv": {
+          "bytes": 15216,
+          "sha256": "12ac09ee423496750a21e9b8b61c25c100c17b61eba549acfcc650a567246fca"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/summary_table_downstream.csv": {
+          "bytes": 1746,
+          "sha256": "70b06a1737c33814327ddd2da79fd968fcb858648e126892eaefa03e83fd9b33"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/UDP [192.168.1.216 50053] to [192.168.1.79 50053]latency.csv": {
+          "bytes": 2188659,
+          "sha256": "dceb86ca4090b614cfc2f487940b7d2357b071aca25b5e0ef8cc3855ab669564"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/capture_cmci.pcapng": {
+          "bytes": 11358744,
+          "sha256": "811163654974c753a6d4469abd1ec049ebcc248b4093a0bc101ba267946fb5cf"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/Aggregate_thruput_downstream.pdf": {
+          "bytes": 51314,
+          "sha256": "d200e4fca30c700a0a1376d0870bacdd3d4228851866e244092c497a5b835966"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r1/monitor/Aggregate_thruput_upstream.pdf": {
+          "bytes": 44490,
+          "sha256": "a536aceb43e866d2ad2e5a7dd90f76e4ffd6cb1c2a0e82257b721561c195aa31"
+        }
+      },
+      "controller_target_series": [
+        {
+          "elapsed_seconds": 1.0,
+          "target_mbps": 18.46332
+        },
+        {
+          "elapsed_seconds": 1.9997968673706055,
+          "target_mbps": 12.34353
+        },
+        {
+          "elapsed_seconds": 2.9996440410614014,
+          "target_mbps": 12.34353
+        },
+        {
+          "elapsed_seconds": 3.999861001968384,
+          "target_mbps": 12.34353
+        },
+        {
+          "elapsed_seconds": 4.999369859695435,
+          "target_mbps": 12.34353
+        },
+        {
+          "elapsed_seconds": 6.000182867050171,
+          "target_mbps": 12.34353
+        },
+        {
+          "elapsed_seconds": 6.999624013900757,
+          "target_mbps": 14.289178
+        },
+        {
+          "elapsed_seconds": 8.000212907791138,
+          "target_mbps": 14.289178
+        },
+        {
+          "elapsed_seconds": 9.000099897384644,
+          "target_mbps": 14.190079
+        },
+        {
+          "elapsed_seconds": 9.999937057495117,
+          "target_mbps": 14.190079
+        },
+        {
+          "elapsed_seconds": 10.999729871749878,
+          "target_mbps": 12.776383
+        },
+        {
+          "elapsed_seconds": 11.99931287765503,
+          "target_mbps": 12.776383
+        },
+        {
+          "elapsed_seconds": 12.999778985977173,
+          "target_mbps": 14.79026
+        },
+        {
+          "elapsed_seconds": 13.999404907226562,
+          "target_mbps": 14.79026
+        },
+        {
+          "elapsed_seconds": 15.000028848648071,
+          "target_mbps": 12.373714
+        },
+        {
+          "elapsed_seconds": 15.999856948852539,
+          "target_mbps": 12.373714
+        },
+        {
+          "elapsed_seconds": 16.99996590614319,
+          "target_mbps": 14.324118
+        },
+        {
+          "elapsed_seconds": 17.999980926513672,
+          "target_mbps": 15.792339
+        },
+        {
+          "elapsed_seconds": 18.99935293197632,
+          "target_mbps": 13.107352
+        },
+        {
+          "elapsed_seconds": 19.999752044677734,
+          "target_mbps": 13.107352
+        },
+        {
+          "elapsed_seconds": 20.99931788444519,
+          "target_mbps": 15.173396
+        },
+        {
+          "elapsed_seconds": 21.999738931655884,
+          "target_mbps": 12.876612
+        },
+        {
+          "elapsed_seconds": 22.99985694885254,
+          "target_mbps": 12.876612
+        },
+        {
+          "elapsed_seconds": 23.999974966049194,
+          "target_mbps": 12.876612
+        },
+        {
+          "elapsed_seconds": 24.999449968338013,
+          "target_mbps": 12.876612
+        },
+        {
+          "elapsed_seconds": 25.999796867370605,
+          "target_mbps": 23.12454
+        },
+        {
+          "elapsed_seconds": 27.000208854675293,
+          "target_mbps": 23.12454
+        },
+        {
+          "elapsed_seconds": 28.000216960906982,
+          "target_mbps": 23.12454
+        },
+        {
+          "elapsed_seconds": 28.999377012252808,
+          "target_mbps": 23.12454
+        }
+      ],
+      "delivered_frame_mbps_per_second": [
+        18.558568,
+        18.3664,
+        16.787376,
+        16.896952,
+        17.10388,
+        18.008936,
+        18.91172,
+        19.834528,
+        19.940176,
+        19.450904,
+        18.258456,
+        17.431496,
+        18.063128,
+        19.719104,
+        19.700896,
+        17.595024,
+        18.393648,
+        19.969136,
+        19.65064,
+        19.4372,
+        19.468056,
+        18.57036,
+        17.701416,
+        18.265032,
+        18.450608,
+        18.96516,
+        19.973256,
+        19.79844,
+        19.91208,
+        13.525848
+      ],
+      "ce_per_second": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "drops_per_second": [
+        680,
+        466,
+        116,
+        131,
+        72,
+        47,
+        14,
+        145,
+        209,
+        55,
+        268,
+        72,
+        26,
+        165,
+        245,
+        39,
+        19,
+        147,
+        221,
+        43,
+        133,
+        254,
+        54,
+        11,
+        0,
+        279,
+        1576,
+        1331,
+        1357,
+        830
+      ],
+      "repetition": 1,
+      "capture_accounting": [
+        "Packets received/dropped on interface 'enp3s0': 88882/1 (pcap:0/dumpcap:0/flushed:1/ps_ifdrop:0) (100.0%)",
+        "Packets received/dropped on interface 'enp2s0': 97781/1 (pcap:0/dumpcap:0/flushed:1/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    {
+      "controller": "gcc",
+      "run_id": "pion-gcc-baseline-25m-20261115T181607Z-r2",
+      "source_mbps": 23.950988,
+      "initial_controller_target_mbps": 25,
+      "dashboard_result_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r2_2026_11_15_19_22/",
+      "flow_plot_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r2_2026_11_15_19_22/2_downstream.pdf",
+      "selected_ice_pair": {
+        "time": "2026-11-15T11:22:43.936228906-07:00",
+        "level": "INFO",
+        "msg": "selected ICE pair",
+        "role": "sender",
+        "local": "udp4 host 192.168.1.216:50006 (resolved: 192.168.1.216:50006)",
+        "remote": "udp4 host 192.168.1.79:50023 (resolved: 192.168.1.79:50023)"
+      },
+      "sender_started_at_utc": "2026-11-15T18:22:43.754866+00:00",
+      "sender_finished_at_utc": "2026-11-15T18:23:13.784817+00:00",
+      "sender_started_at_local": "2026-11-15T10:22:43.754866-08:00",
+      "capture_partial": false,
+      "capture_start_attempts": 1,
+      "media_interval_seconds": 29.83649778366089,
+      "media_first_at_utc": "2026-11-15T18:22:43.962079+00:00",
+      "monitor_udp_frame_mbps": 18.893,
+      "delivered_vp8_frame_mbps": 18.99407645324735,
+      "steady_delivered_vp8_frame_mbps": 18.935977920000003,
+      "ingress_rtp_packets": 61170,
+      "egress_rtp_packets": 56969,
+      "matched_unique_rtp_packets": 56969,
+      "missing_unique_rtp_packets": 4201,
+      "missing_media_percent": 6.8677456269413115,
+      "ingress_duplicate_media_packets": 0,
+      "egress_duplicate_media_packets": 0,
+      "unpaired_egress_rtp_packets": 0,
+      "monitor_udp_drops": 4205,
+      "ingress_media_ecn_counts": {
+        "0": 61170,
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "egress_media_ecn_counts": {
+        "0": 56969,
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "new_ce_between_vantages": 0,
+      "sender_processed_ce_last_feedback": null,
+      "sender_provisional_loss_last_feedback": null,
+      "sender_provisional_loss_max": null,
+      "transit_p50_ms": 22.878646850585938,
+      "transit_p99_ms": 82.95291900634763,
+      "large_ingress_packet_gap_p50_us": 0.2384185791015625,
+      "receiver_last_periodic_sample": {
+        "time": "2026-11-15T10:23:15.655546-08:00",
+        "level": "INFO",
+        "msg": "receiver metrics",
+        "role": "receiver",
+        "packets": 56964,
+        "rtp_payload_bytes": 66845820,
+        "rtp_payload_mbps": 0,
+        "ce_count": null,
+        "ect1_count": null,
+        "nonect_count": null
+      },
+      "sender_last_periodic_sample": {
+        "time": "2026-11-15T11:23:12.936614865-07:00",
+        "level": "INFO",
+        "msg": "sender metrics",
+        "role": "sender",
+        "gcc_target_bps": 13034509,
+        "rtcp_batches": 318,
+        "congestion_feedback_reports": 289,
+        "gcc": {
+          "averageLoss": 0.07205568043197391,
+          "delayEstimate": 256.195,
+          "delayMeasurement": 207.97,
+          "delayTargetBitrate": 50000000,
+          "delayThreshold": 34.731,
+          "lossTargetBitrate": 13034509,
+          "state": "increase",
+          "usage": "normal"
+        },
+        "encoder_target_bps": null,
+        "ce_count": null
+      },
+      "sender_last_feedback_state": {
+        "averageLoss": 0.034425621724299464,
+        "delayEstimate": 661.769,
+        "delayMeasurement": 391.304,
+        "delayTargetBitrate": 50000000,
+        "delayThreshold": 34.25,
+        "lossTargetBitrate": 13034509,
+        "state": "increase",
+        "usage": "normal"
+      },
+      "feedback_dispatch_count": 327,
+      "feedback_trace_truncated": false,
+      "process_outcomes": {
+        "sender": {
+          "status": "exited",
+          "exit_code": 0,
+          "binary_sha256": "10a351e678975732d0edf01cae5591ddfd5ebf5e820d1986aaee1fa69e89c71d",
+          "video_sha256": "cbe29e3da7d7b256fed6b7e7aff519d9263900d15d4b9a05459331e15f975f2b"
+        },
+        "receiver": {
+          "status": "interrupted",
+          "exit_code": 0,
+          "binary_sha256": "d0c3ec8e848d429fb5c5195ef1ab724e156f31ae8caaf03a1487d32c3650a85f",
+          "video_sha256": null
+        }
+      },
+      "monitor_downstream_summary": {
+        "Flow Number": "2",
+        "Flow ID": "UDP [192.168.1.216 50006] to [192.168.1.79 50023]",
+        "Packet Delay P0 (ms)": "10.004",
+        "Packet Delay P50 (ms)": "22.878",
+        "Packet Delay P90 (ms)": "46.075",
+        "Packet Delay P99 (ms)": "82.890",
+        "Packet Delay P99.9 (ms)": "187.614",
+        "PDV P99 (ms)": "72.875",
+        "PDV P99.9 (ms)": "177.608",
+        "Mean data rate (Mbps)": "18.893",
+        "P10 of data rate (Mbps)": "16.978",
+        "P10 % of mean": "89.6",
+        "Ramp time to 90% Tput (ms)": "200",
+        "Num Packets": "61235",
+        "Num NotECT": "57030",
+        "Num ECT0": "0",
+        "Num ECT1": "0",
+        "Num CE": "0",
+        "Dropped Packets": "4205",
+        "Missing Packets": "0",
+        "Num Sanctioned": "0"
+      },
+      "monitor_upstream_summary": {
+        "Flow Number": "2",
+        "Flow ID": "UDP [192.168.1.79 50023] to [192.168.1.216 50006]",
+        "Packet Delay P0 (ms)": "10.003",
+        "Packet Delay P50 (ms)": "10.076",
+        "Packet Delay P90 (ms)": "10.089",
+        "Packet Delay P99 (ms)": "17.595",
+        "Packet Delay P99.9 (ms)": "40.426",
+        "PDV P99 (ms)": "7.590",
+        "PDV P99.9 (ms)": "30.423",
+        "Mean data rate (Mbps)": "0.103",
+        "P10 of data rate (Mbps)": "0.098",
+        "P10 % of mean": "95.2",
+        "Ramp time to 90% Tput (ms)": "400",
+        "Num Packets": "394",
+        "Num NotECT": "394",
+        "Num ECT0": "0",
+        "Num ECT1": "0",
+        "Num CE": "0",
+        "Dropped Packets": "0",
+        "Missing Packets": "0",
+        "Num Sanctioned": "0"
+      },
+      "raw_artifacts": {
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/UDP [192.168.1.216 50006] to [192.168.1.79 50023]latency.csv": {
+          "bytes": 2227085,
+          "sha256": "91c6dedd90b0161603a48ef43f0616162da7b9456bd3d88d6f7a08de4c63f217"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/2_downstream.pdf": {
+          "bytes": 218298,
+          "sha256": "13bfd7e9d24fd89fe5a18d203d18909d7ea29a9a84d5c3a07b7714a6f758752b"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/UDP [192.168.1.79 50023] to [192.168.1.216 50006]latency.csv": {
+          "bytes": 15371,
+          "sha256": "738309c0f405aa33a185328bfcafaf57a356abc1e31c5823082b917ab84cf0d6"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/capture_nsi.pcapng": {
+          "bytes": 12375480,
+          "sha256": "1dc6f34b466b20ea624890aed12b71070d5c50141066987ce6242c04577e6b23"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/summary_table_upstream.csv": {
+          "bytes": 1729,
+          "sha256": "378aaab7cb0849301388c07ee674c941f6ffbf31fe4c33f4671a2f127dd18072"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/summary_table_downstream.csv": {
+          "bytes": 1733,
+          "sha256": "bf81f0af913cc0dedb21104c3e925695771ac079c5e274e3ebb3959d91924033"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/capture_cmci.pcapng": {
+          "bytes": 11814272,
+          "sha256": "15f16dba30577e4692de834152256ff3df699051fdf74b15d79409b34afd21d0"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/Aggregate_thruput_downstream.pdf": {
+          "bytes": 49938,
+          "sha256": "6d3294bf7c60b0b6b4139e3c3c3dde1d95f9588ac45aa2a3e58b63ca9c951086"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r2/monitor/Aggregate_thruput_upstream.pdf": {
+          "bytes": 43518,
+          "sha256": "1d07e83e4dc5ae227dd75ca7b705514d920ee30415a41463e5fd97d8dc080a3d"
+        }
+      },
+      "controller_target_series": [
+        {
+          "elapsed_seconds": 1.0,
+          "target_mbps": 17.570738
+        },
+        {
+          "elapsed_seconds": 1.9990968704223633,
+          "target_mbps": 14.43564
+        },
+        {
+          "elapsed_seconds": 2.999147891998291,
+          "target_mbps": 13.573416
+        },
+        {
+          "elapsed_seconds": 3.9992828369140625,
+          "target_mbps": 14.96469
+        },
+        {
+          "elapsed_seconds": 4.999121904373169,
+          "target_mbps": 13.826102
+        },
+        {
+          "elapsed_seconds": 5.9997358322143555,
+          "target_mbps": 12.754579
+        },
+        {
+          "elapsed_seconds": 6.999821901321411,
+          "target_mbps": 13.392307
+        },
+        {
+          "elapsed_seconds": 7.999078035354614,
+          "target_mbps": 14.061922
+        },
+        {
+          "elapsed_seconds": 8.99995493888855,
+          "target_mbps": 14.061922
+        },
+        {
+          "elapsed_seconds": 9.99968695640564,
+          "target_mbps": 14.061922
+        },
+        {
+          "elapsed_seconds": 10.999123811721802,
+          "target_mbps": 13.905292
+        },
+        {
+          "elapsed_seconds": 11.999876022338867,
+          "target_mbps": 12.131545
+        },
+        {
+          "elapsed_seconds": 12.999008893966675,
+          "target_mbps": 12.738122
+        },
+        {
+          "elapsed_seconds": 13.999210834503174,
+          "target_mbps": 14.745967
+        },
+        {
+          "elapsed_seconds": 14.999759912490845,
+          "target_mbps": 14.745967
+        },
+        {
+          "elapsed_seconds": 15.9999098777771,
+          "target_mbps": 11.60272
+        },
+        {
+          "elapsed_seconds": 16.99940299987793,
+          "target_mbps": 12.791998
+        },
+        {
+          "elapsed_seconds": 17.999840021133423,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 18.99921488761902,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 20.000041961669922,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 20.999934911727905,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 21.99947690963745,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 23.00000786781311,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 23.999522924423218,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 24.999327898025513,
+          "target_mbps": 14.103176
+        },
+        {
+          "elapsed_seconds": 25.99926996231079,
+          "target_mbps": 13.389777
+        },
+        {
+          "elapsed_seconds": 26.999366998672485,
+          "target_mbps": 13.389777
+        },
+        {
+          "elapsed_seconds": 27.999250888824463,
+          "target_mbps": 15.500339
+        },
+        {
+          "elapsed_seconds": 28.999228954315186,
+          "target_mbps": 13.034509
+        }
+      ],
+      "delivered_frame_mbps_per_second": [
+        18.790648,
+        19.607784,
+        19.280176,
+        19.610608,
+        19.708136,
+        18.17972,
+        17.775864,
+        19.409728,
+        18.996824,
+        19.575664,
+        19.503312,
+        18.085672,
+        17.538912,
+        19.265928,
+        19.54744,
+        18.09804,
+        17.216488,
+        18.964744,
+        19.61156,
+        19.00016,
+        18.87208,
+        19.240304,
+        19.144888,
+        19.361312,
+        18.770576,
+        19.091528,
+        19.549784,
+        19.67456,
+        19.344912,
+        15.899368
+      ],
+      "ce_per_second": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "drops_per_second": [
+        660,
+        358,
+        95,
+        42,
+        253,
+        109,
+        42,
+        110,
+        137,
+        83,
+        135,
+        154,
+        37,
+        15,
+        300,
+        164,
+        28,
+        56,
+        107,
+        138,
+        131,
+        124,
+        88,
+        109,
+        151,
+        97,
+        79,
+        125,
+        218,
+        56
+      ],
+      "repetition": 2,
+      "capture_accounting": [
+        "Packets received/dropped on interface 'enp3s0': 92776/1 (pcap:0/dumpcap:0/flushed:1/ps_ifdrop:0) (100.0%)",
+        "Packets received/dropped on interface 'enp2s0': 97041/1 (pcap:0/dumpcap:0/flushed:1/ps_ifdrop:0) (100.0%)"
+      ]
+    },
+    {
+      "controller": "gcc",
+      "run_id": "pion-gcc-baseline-25m-20261115T181607Z-r3",
+      "source_mbps": 23.950988,
+      "initial_controller_target_mbps": 25,
+      "dashboard_result_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r3_2026_11_15_19_24/",
+      "flow_plot_url": "http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r3_2026_11_15_19_24/1_downstream.pdf",
+      "selected_ice_pair": {
+        "time": "2026-11-15T11:24:07.074464303-07:00",
+        "level": "INFO",
+        "msg": "selected ICE pair",
+        "role": "sender",
+        "local": "udp4 host 192.168.1.216:50097 (resolved: 192.168.1.216:50097)",
+        "remote": "udp4 host 192.168.1.79:50081 (resolved: 192.168.1.79:50081)"
+      },
+      "sender_started_at_utc": "2026-11-15T18:24:06.891741+00:00",
+      "sender_finished_at_utc": "2026-11-15T18:24:36.924879+00:00",
+      "sender_started_at_local": "2026-11-15T10:24:06.891741-08:00",
+      "capture_partial": false,
+      "capture_start_attempts": 1,
+      "media_interval_seconds": 29.8456392288208,
+      "media_first_at_utc": "2026-11-15T18:24:07.095317+00:00",
+      "monitor_udp_frame_mbps": 17.576,
+      "delivered_vp8_frame_mbps": 17.665324302750108,
+      "steady_delivered_vp8_frame_mbps": 17.47426784,
+      "ingress_rtp_packets": 57167,
+      "egress_rtp_packets": 52995,
+      "matched_unique_rtp_packets": 52995,
+      "missing_unique_rtp_packets": 4172,
+      "missing_media_percent": 7.29791663022373,
+      "ingress_duplicate_media_packets": 0,
+      "egress_duplicate_media_packets": 0,
+      "unpaired_egress_rtp_packets": 0,
+      "monitor_udp_drops": 4175,
+      "ingress_media_ecn_counts": {
+        "0": 57167,
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "egress_media_ecn_counts": {
+        "0": 52995,
+        "1": 0,
+        "2": 0,
+        "3": 0
+      },
+      "new_ce_between_vantages": 0,
+      "sender_processed_ce_last_feedback": null,
+      "sender_provisional_loss_last_feedback": null,
+      "sender_provisional_loss_max": null,
+      "transit_p50_ms": 20.177364349365234,
+      "transit_p99_ms": 92.5727033615112,
+      "large_ingress_packet_gap_p50_us": 0.2384185791015625,
+      "receiver_last_periodic_sample": {
+        "time": "2026-11-15T10:24:40.967423-08:00",
+        "level": "INFO",
+        "msg": "receiver metrics",
+        "role": "receiver",
+        "packets": 52995,
+        "rtp_payload_bytes": 62194462,
+        "rtp_payload_mbps": 0,
+        "ce_count": null,
+        "ect1_count": null,
+        "nonect_count": null
+      },
+      "sender_last_periodic_sample": {
+        "time": "2026-11-15T11:24:36.074737415-07:00",
+        "level": "INFO",
+        "msg": "sender metrics",
+        "role": "sender",
+        "gcc_target_bps": 13252275,
+        "rtcp_batches": 316,
+        "congestion_feedback_reports": 288,
+        "gcc": {
+          "averageLoss": 0.009631594737439774,
+          "delayEstimate": 977.375,
+          "delayMeasurement": -220.427,
+          "delayTargetBitrate": 17581494,
+          "delayThreshold": 84.253,
+          "lossTargetBitrate": 13252275,
+          "state": "increase",
+          "usage": "normal"
+        },
+        "encoder_target_bps": null,
+        "ce_count": null
+      },
+      "sender_last_feedback_state": {
+        "averageLoss": 0.019898638487470137,
+        "delayEstimate": 90.347,
+        "delayMeasurement": 98.261,
+        "delayTargetBitrate": 17590070,
+        "delayThreshold": 99.119,
+        "lossTargetBitrate": 13914888,
+        "state": "increase",
+        "usage": "normal"
+      },
+      "feedback_dispatch_count": 324,
+      "feedback_trace_truncated": false,
+      "process_outcomes": {
+        "sender": {
+          "status": "exited",
+          "exit_code": 0,
+          "binary_sha256": "10a351e678975732d0edf01cae5591ddfd5ebf5e820d1986aaee1fa69e89c71d",
+          "video_sha256": "cbe29e3da7d7b256fed6b7e7aff519d9263900d15d4b9a05459331e15f975f2b"
+        },
+        "receiver": {
+          "status": "interrupted",
+          "exit_code": 0,
+          "binary_sha256": "d0c3ec8e848d429fb5c5195ef1ab724e156f31ae8caaf03a1487d32c3650a85f",
+          "video_sha256": null
+        }
+      },
+      "monitor_downstream_summary": {
+        "Flow Number": "1",
+        "Flow ID": "UDP [192.168.1.216 50097] to [192.168.1.79 50081]",
+        "Packet Delay P0 (ms)": "10.004",
+        "Packet Delay P50 (ms)": "20.172",
+        "Packet Delay P90 (ms)": "45.906",
+        "Packet Delay P99 (ms)": "92.597",
+        "Packet Delay P99.9 (ms)": "181.941",
+        "PDV P99 (ms)": "82.583",
+        "PDV P99.9 (ms)": "171.934",
+        "Mean data rate (Mbps)": "17.576",
+        "P10 of data rate (Mbps)": "7.638",
+        "P10 % of mean": "43.6",
+        "Ramp time to 90% Tput (ms)": "100",
+        "Num Packets": "57229",
+        "Num NotECT": "53054",
+        "Num ECT0": "0",
+        "Num ECT1": "0",
+        "Num CE": "0",
+        "Dropped Packets": "4175",
+        "Missing Packets": "0",
+        "Num Sanctioned": "0"
+      },
+      "monitor_upstream_summary": {
+        "Flow Number": "1",
+        "Flow ID": "UDP [192.168.1.79 50081] to [192.168.1.216 50097]",
+        "Packet Delay P0 (ms)": "10.006",
+        "Packet Delay P50 (ms)": "10.022",
+        "Packet Delay P90 (ms)": "10.074",
+        "Packet Delay P99 (ms)": "45.037",
+        "Packet Delay P99.9 (ms)": "119.524",
+        "PDV P99 (ms)": "35.029",
+        "PDV P99.9 (ms)": "109.517",
+        "Mean data rate (Mbps)": "0.084",
+        "P10 of data rate (Mbps)": "0.022",
+        "P10 % of mean": "26.7",
+        "Ramp time to 90% Tput (ms)": "300",
+        "Num Packets": "389",
+        "Num NotECT": "386",
+        "Num ECT0": "0",
+        "Num ECT1": "0",
+        "Num CE": "0",
+        "Dropped Packets": "3",
+        "Missing Packets": "0",
+        "Num Sanctioned": "0"
+      },
+      "raw_artifacts": {
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/UDP [192.168.1.79 50081] to [192.168.1.216 50097]latency.csv": {
+          "bytes": 14985,
+          "sha256": "d9a820eaeadf6762d4042fad8a3392e489056460d9be528012f4cc1a7175d7aa"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/1_downstream.pdf": {
+          "bytes": 211397,
+          "sha256": "6b84d6fe59f7e02259f969332e51a46431840d7105746b16a207a1283973bf82"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/capture_nsi.pcapng": {
+          "bytes": 11201184,
+          "sha256": "da0717da591a918cc7a64775cf9911af54c36ab6d9d10ceed395e32381fdcbf0"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/summary_table_upstream.csv": {
+          "bytes": 1735,
+          "sha256": "86d1de536a720a49fa9742b8b5929159c88d70de5fb93d4966d871f9285293e5"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/summary_table_downstream.csv": {
+          "bytes": 1729,
+          "sha256": "35952c2d78c151152d6b0852eae0759b83f1aefc1c99a9d5b97f3ac80f4d6a78"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/UDP [192.168.1.216 50097] to [192.168.1.79 50081]latency.csv": {
+          "bytes": 2071332,
+          "sha256": "0ead8a151e8e8579a48252d5cdd56da674b86961adcfca487c0bc28e201bb50b"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/capture_cmci.pcapng": {
+          "bytes": 10664864,
+          "sha256": "2d48ae8ac08ce1f47013010f74a7ce5f8cd80b3cdfc739617aa3201a6ebe90fd"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/Aggregate_thruput_downstream.pdf": {
+          "bytes": 48276,
+          "sha256": "bd3ab4f4b854b7efebaae4f8d39e1cf08b1fc6bd947285b28fd245f3194cd23a"
+        },
+        "results/raw/pion-gcc-baseline-25m-20261115T181607Z-r3/monitor/Aggregate_thruput_upstream.pdf": {
+          "bytes": 42532,
+          "sha256": "c30e317e3e9d6dd934bb19044f44c74926a2c7e69ace8a874e871fd557258df8"
+        }
+      },
+      "controller_target_series": [
+        {
+          "elapsed_seconds": 1.0,
+          "target_mbps": 18.74246
+        },
+        {
+          "elapsed_seconds": 2.0001790523529053,
+          "target_mbps": 13.57044
+        },
+        {
+          "elapsed_seconds": 3.000209093093872,
+          "target_mbps": 13.57044
+        },
+        {
+          "elapsed_seconds": 3.9999020099639893,
+          "target_mbps": 13.57044
+        },
+        {
+          "elapsed_seconds": 4.999772071838379,
+          "target_mbps": 13.57044
+        },
+        {
+          "elapsed_seconds": 5.999867916107178,
+          "target_mbps": 16.494954
+        },
+        {
+          "elapsed_seconds": 6.999783992767334,
+          "target_mbps": 16.494954
+        },
+        {
+          "elapsed_seconds": 7.999429941177368,
+          "target_mbps": 16.494954
+        },
+        {
+          "elapsed_seconds": 8.999859094619751,
+          "target_mbps": 16.494954
+        },
+        {
+          "elapsed_seconds": 9.999490976333618,
+          "target_mbps": 4.471611
+        },
+        {
+          "elapsed_seconds": 11.000118970870972,
+          "target_mbps": 5.176447
+        },
+        {
+          "elapsed_seconds": 12.000156879425049,
+          "target_mbps": 6.606602
+        },
+        {
+          "elapsed_seconds": 12.999820947647095,
+          "target_mbps": 8.030364
+        },
+        {
+          "elapsed_seconds": 13.999549865722656,
+          "target_mbps": 9.760956
+        },
+        {
+          "elapsed_seconds": 15.000277042388916,
+          "target_mbps": 9.760956
+        },
+        {
+          "elapsed_seconds": 16.000019073486328,
+          "target_mbps": 12.075474
+        },
+        {
+          "elapsed_seconds": 16.99975299835205,
+          "target_mbps": 12.075474
+        },
+        {
+          "elapsed_seconds": 18.000001907348633,
+          "target_mbps": 13.041511
+        },
+        {
+          "elapsed_seconds": 18.999393939971924,
+          "target_mbps": 13.041511
+        },
+        {
+          "elapsed_seconds": 19.99945306777954,
+          "target_mbps": 14.084831
+        },
+        {
+          "elapsed_seconds": 20.999921083450317,
+          "target_mbps": 14.52293
+        },
+        {
+          "elapsed_seconds": 21.999780893325806,
+          "target_mbps": 13.715341
+        },
+        {
+          "elapsed_seconds": 22.999895095825195,
+          "target_mbps": 13.715341
+        },
+        {
+          "elapsed_seconds": 24.000190019607544,
+          "target_mbps": 14.275551
+        },
+        {
+          "elapsed_seconds": 25.00003695487976,
+          "target_mbps": 13.513779
+        },
+        {
+          "elapsed_seconds": 25.99951410293579,
+          "target_mbps": 14.89894
+        },
+        {
+          "elapsed_seconds": 26.99953007698059,
+          "target_mbps": 12.020205
+        },
+        {
+          "elapsed_seconds": 27.999270915985107,
+          "target_mbps": 12.020205
+        },
+        {
+          "elapsed_seconds": 28.999304056167603,
+          "target_mbps": 13.252275
+        }
+      ],
+      "delivered_frame_mbps_per_second": [
+        18.882224,
+        18.96372,
+        18.649424,
+        19.261088,
+        19.824552,
+        19.853136,
+        19.80056,
+        19.748632,
+        19.814024,
+        12.841864,
+        7.714656,
+        9.113232,
+        11.12976,
+        13.714176,
+        14.916368,
+        17.352536,
+        17.758352,
+        19.549968,
+        19.640096,
+        19.912712,
+        19.914672,
+        19.087936,
+        19.555608,
+        19.775848,
+        19.570912,
+        19.49484,
+        18.861744,
+        17.439016,
+        18.424232,
+        16.667008
+      ],
+      "ce_per_second": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "drops_per_second": [
+        634,
+        441,
+        145,
+        76,
+        16,
+        207,
+        528,
+        438,
+        409,
+        189,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        13,
+        19,
+        16,
+        61,
+        211,
+        54,
+        131,
+        112,
+        54,
+        289,
+        55,
+        45,
+        27
+      ],
+      "repetition": 3,
+      "capture_accounting": [
+        "Packets received/dropped on interface 'enp2s0': 87620/1 (pcap:0/dumpcap:0/flushed:1/ps_ifdrop:0) (100.0%)",
+        "Packets received/dropped on interface 'enp3s0': 83550/1 (pcap:0/dumpcap:0/flushed:1/ps_ifdrop:0) (100.0%)"
+      ]
+    }
+  ],
+  "gcc_pacer": {
+    "implementation": "Pion LeakyBucketPacer, altanai/interceptor v0.1.51",
+    "tick_ms": 5,
+    "estimator_update_multiplier": 1.5,
+    "evidence": "pinned pkg/gcc/leaky_bucket_pacer.go constructor and SetTargetBitrate"
+  },
+  "statistics": {
+    "delivered_vp8_frame_mbps": {
+      "mean": 18.440691300918296,
+      "sample_stddev": 0.6916303378788216,
+      "minimum": 17.665324302750108,
+      "maximum": 18.99407645324735,
+      "n": 3
+    },
+    "steady_delivered_vp8_frame_mbps": {
+      "mean": 18.357376426666665,
+      "sample_stddev": 0.7769765227541563,
+      "minimum": 17.47426784,
+      "maximum": 18.935977920000003,
+      "n": 3
+    },
+    "monitor_udp_frame_mbps": {
+      "mean": 18.342666666666666,
+      "sample_stddev": 0.6846329917067491,
+      "minimum": 17.576,
+      "maximum": 18.893,
+      "n": 3
+    },
+    "missing_media_percent": {
+      "mean": 9.34282197163771,
+      "sample_stddev": 3.9203236607576346,
+      "minimum": 6.8677456269413115,
+      "maximum": 13.862803657748083,
+      "n": 3
+    },
+    "transit_p50_ms": {
+      "mean": 21.198352177937824,
+      "sample_stddev": 1.4663716867949652,
+      "minimum": 20.177364349365234,
+      "maximum": 22.878646850585938,
+      "n": 3
+    },
+    "transit_p99_ms": {
+      "mean": 100.53715864817298,
+      "sample_stddev": 22.642590889110707,
+      "minimum": 82.95291900634763,
+      "maximum": 126.08585357666006,
+      "n": 3
+    }
+  },
+  "limitations": [
+    "Three new GCC/CCFB trials, 30 seconds each, fresh receiver and separate 60-second monitor capture for every trial. Earlier GCC/Prague comparison runs are not pooled into these statistics.",
+    "Identical frozen endpoint binaries from source commit 0059d63a5285e17d022a0df1c210b5997fa13d01 and identical 23.950988 Mbps VP8 IVF source; initial controller target 25 Mbps in every trial.",
+    "GCC only was selected. Its media was Non-ECT at the egress capture. CE=0 is therefore expected; sender CE is unavailable rather than evidence of an uncongested path.",
+    "The pinned Pion GCC LeakyBucketPacer uses a 5 ms ticker and SetTargetBitrate applies a 1.5 multiplier to estimator updates. The plotted GCC bandwidth estimate is not a strict wire-rate cap; its pacer and packet overhead can produce a higher transmitted rate.",
+    "Mean delivered media frame rate uses one client-side capture vantage and includes Ethernet/IP/UDP/SRTP headers. Monitor UDP frame averages use the monitor-defined flow interval and include control traffic, so their numerical values can differ.",
+    "The common steady window is 2 through 27 seconds after each first ingress media packet. One-second delivered-rate plots use the first ingress media packet as time zero. Target-rate plots use approximately aligned one-second sender metrics.",
+    "The endpoint limit is configured as 30 seconds; process shutdown and buffered-packet drain can extend the complete media interval. The plots show the first 30 seconds, whole-media rates use the actual captured interval, and steady comparisons use the common 25-second window.",
+    "Missing media packets are unique VP8 RTP identities seen at NSI and absent at CMCI, divided by the ingress unique-media count. Monitor UDP drops also include non-media datagrams; controller loss estimates and end-to-end playback loss are separate quantities.",
+    "Paired one-way transit includes fixed propagation/emulation delay and is not pure queue delay. P50 and P99 statistics below summarize per-trial quantiles, not a pooled packet quantile.",
+    "Capture interface mapping was checked live: NSI=enp2s0 and CMCI=enp3s0. Active DualPI2/SRM mode, configured shaping capacity and queue telemetry were not independently verified.",
+    "No controlled competing traffic was added. Existing lab and endpoint background traffic was uncontrolled. These are repeated fixed-source transport baselines, not completed adaptive-video performance validation.",
+    "Bulk capture downloads were deferred until all three trials finished. Only this task's endpoint processes were stopped; the original local config and shared network settings were preserved."
+  ],
+  "analysis_code_sha256": {
+    "analyze-baseline.py": "760bbd89b1ec36309e003581ca9c322653784a1d98d66990a1d987121bc41d50",
+    "capture_analysis.py": "7c3debc640ac766c6152001719e80e69a732db04405a58b14e604f7f44a81839"
+  },
+  "requirement_status": {
+    "repeated_GCC_transport_baseline": "verified, three trials",
+    "matching_binary_and_source_provenance": "verified",
+    "selected_media_at_both_monitor_sides": "verified",
+    "live_qdisc_mode_and_capacity": "unverified",
+    "adaptive_encoder_and_six_complete_metrics": "incomplete"
+  },
+  "unavailable_metrics": {
+    "pure_queue_delay_ms": null,
+    "deduplicated_application_goodput_bps": null,
+    "adaptive_encoder_target_bps": null,
+    "raw_rtt_variation_ms": null
+  }
+}

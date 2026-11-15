@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "run_id": "prague-lab-selabs216-20261115005949Z",
+  "scope": "Physical two-host Pion Prague endpoint transport and ECN feedback check; not a congestion benchmark or conformance result",
+  "started_at_utc": "2026-11-15T01:00:00.386301+00:00",
+  "finished_at_utc": "2026-11-15T01:00:30.415411+00:00",
+  "sender_duration_seconds": 30,
+  "controller": "prague",
+  "feedback": "ccfb",
+  "media": "Fixed prerecorded VP8, nominally 500000 bps; no adaptive encoding",
+  "source_commit": "cdba9aaf71ce4acadd9d2809c8c457e07c703fa2",
+  "source_archive_sha256": "9aff300a5a94b9a31caff17ccc33e357812020ba4d3b79f8c4caeac15cd4d3d1",
+  "placement_basis": "User-confirmed server on servers switch and Mac behind lld-black4; no independent bottleneck capture or qdisc evidence",
+  "endpoints": {
+    "sender": {
+      "ipv4": "192.168.1.216",
+      "interface": "enp1s0",
+      "binary_sha256": "02faabdbad523d0e0dcd079bdc21b9737ab2594d9632eba60e78d8e994e12ed3",
+      "status": "exited",
+      "exit_code": 0,
+      "selected_ice_pair": {
+        "time": "2026-11-14T18:00:00.63720965-07:00",
+        "level": "INFO",
+        "msg": "selected ICE pair",
+        "role": "sender",
+        "local": "udp4 host 192.168.1.216:50000 (resolved: 192.168.1.216:50000)",
+        "remote": "udp4 host 192.168.1.79:50000 (resolved: 192.168.1.79:50000)"
+      }
+    },
+    "receiver": {
+      "ipv4": "192.168.1.79",
+      "interface": "en7",
+      "binary_sha256": "a20a8d4c22e6db280d6315682324d0867ae77e1ca17af5c73fda823b50693775",
+      "status": "interrupted",
+      "exit_code": 0,
+      "selected_ice_pair": {
+        "time": "2026-11-14T17:00:00.675187-08:00",
+        "level": "INFO",
+        "msg": "selected ICE pair",
+        "role": "receiver",
+        "local": "udp4 host 192.168.1.79:50000 (resolved: 192.168.1.79:50000)",
+        "remote": "udp4 host 192.168.1.216:50000 (resolved: 192.168.1.216:50000)"
+      }
+    }
+  },
+  "video_sha256": "20e9befd853d092b4bccc6658f10d8104a8221e8a729b66eb2d3442f1749e77a",
+  "receiver_post_transfer_sample": {
+    "time": "2026-11-14T17:00:31.435641-08:00",
+    "level": "INFO",
+    "msg": "receiver metrics",
+    "role": "receiver",
+    "packets": 2078,
+    "rtp_payload_bytes": 1864520,
+    "rtp_payload_mbps": 0.009945544045713097,
+    "ce_count": 2,
+    "ect1_count": 2076,
+    "nonect_count": 0
+  },
+  "sender_last_periodic_sample": {
+    "time": "2026-11-14T18:00:29.639614143-07:00",
+    "level": "INFO",
+    "msg": "sender metrics",
+    "role": "sender",
+    "controller": "prague",
+    "target_bps": 34827784,
+    "congestion_feedback_reports": 924,
+    "prague": {
+      "algorithm": "udp-prague",
+      "alpha": 1.430511474609375e-05,
+      "ce": 2,
+      "failure": "<nil>",
+      "inflight_bytes": 3194,
+      "lost": 0,
+      "packet_size": 1200,
+      "packet_window": 90,
+      "rate_bps": 34827784,
+      "received": 2017,
+      "sent": 2021,
+      "srtt_us": 23208
+    },
+    "ce_count": 2,
+    "encoder_target_bps": null
+  },
+  "sampling_notes": [
+    "Sender and receiver samples have independent timestamps. The sender last sample precedes process completion; its sent/received counts are not final totals.",
+    "The receiver stayed up after sender completion and was then stopped with Ctrl+C.",
+    "Sender time strings have a -07:00 offset and Mac strings -08:00; metadata timestamps normalize to UTC.",
+    "Receiver payload bytes are transport counters, not deduplicated application goodput. Prague target rate is not measured link capacity."
+  ],
+  "observations": {
+    "receiver_rtp_packets": 2078,
+    "receiver_ect1_packets": 2076,
+    "receiver_ce_packets": 2,
+    "receiver_nonect_packets": 0,
+    "sender_prague_ce": 2,
+    "sender_feedback_reports_last_sample": 924,
+    "endpoint_warning_error_events": 0
+  },
+  "not_established": [
+    "Exact transparent bottleneck path or marking device",
+    "Live DualPI2/SRM qdisc, shaping rate or added delay",
+    "Sustained congestion response, fairness or capacity",
+    "Adaptive encoder operation",
+    "Matched physical GCC baseline"
+  ],
+  "unavailable_measurements": {
+    "bottleneck_queue_delay_ms": null,
+    "deduplicated_application_goodput_bps": null,
+    "encoder_target_bps": null,
+    "end_to_end_loss_fraction": null
+  },
+  "raw_artifacts": {
+    "results/raw/prague-lab-selabs216-20261115005949Z/receiver/build-info.txt": "5859cedd604226435ac69415a4e4858faba258d1b65f28ecb44e0aadc825f551",
+    "results/raw/prague-lab-selabs216-20261115005949Z/receiver/endpoint.jsonl": "d14887db18d327cd30a2feba2725f5dd3619d60ca9bd525e20e40ed9c60a56eb",
+    "results/raw/prague-lab-selabs216-20261115005949Z/receiver/metadata.json": "9835cfbb22a3675657fa6baee2e8b3a6fda5905bc7263581a8bf1e599e6832c2",
+    "results/raw/prague-lab-selabs216-20261115005949Z/sender/build-info.txt": "b3a09cb18821f5471b7a5c83dfdda93719e999cd18afb1f6df99c593718a8c34",
+    "results/raw/prague-lab-selabs216-20261115005949Z/sender/endpoint.jsonl": "c8cf306f0ffd7d53adf67456bfd9b1972e1a08b0cc1e930351aa05566a2dc55c",
+    "results/raw/prague-lab-selabs216-20261115005949Z/sender/metadata.json": "efeb3bc60f11568171168f1cb1f79adcb7c5d51a24d11373e2585e58bc615a71"
+  },
+  "installation": {
+    "project": "/home/selabs/pion-l4s-interop",
+    "go": "/home/selabs/.local/share/pion-toolchains/go1.27.4/bin/go",
+    "go_version": "go1.27.4",
+    "source_commit": "cdba9aaf71ce4acadd9d2809c8c457e07c703fa2",
+    "source_archive_sha256": "9aff300a5a94b9a31caff17ccc33e357812020ba4d3b79f8c4caeac15cd4d3d1",
+    "binary_sha256": "02faabdbad523d0e0dcd079bdc21b9737ab2594d9632eba60e78d8e994e12ed3",
+    "video_sha256": "20e9befd853d092b4bccc6658f10d8104a8221e8a729b66eb2d3442f1749e77a",
+    "status": "installed_and_locally_verified"
+  }
+}
