@@ -1,0 +1,68 @@
+{
+  "data": {
+    "arrival_time_offset_unit": "1/1024 second",
+    "controller": "prague",
+    "ecn_codepoints": "0=Non-ECT, 1=ECT(1), 2=ECT(0), 3=CE",
+    "handling_error": "",
+    "outcome": "returned_without_error",
+    "packet_types": [
+      "*rtcp.CCFeedbackReport"
+    ],
+    "packets": [
+      {
+        "SenderSSRC": 0,
+        "ReportBlocks": [
+          {
+            "MediaSSRC": 3480738283,
+            "BeginSequence": 30003,
+            "MetricBlocks": [
+              {
+                "Received": true,
+                "ECN": 1,
+                "ArrivalTimeOffset": 12
+              },
+              {
+                "Received": true,
+                "ECN": 1,
+                "ArrivalTimeOffset": 2
+              }
+            ]
+          }
+        ],
+        "ReportTimestamp": 2389991702
+      }
+    ],
+    "path": "Pion cc.BindRTCPReader -> Attributes.GetRTCPPackets -> BandwidthEstimator.WriteRTCP",
+    "state_after_dispatch": {
+      "algorithm": "udp-prague",
+      "alpha": 0,
+      "ce": 0,
+      "failure": "<nil>",
+      "inflight_bytes": 0,
+      "lost": 0,
+      "packet_size": 1200,
+      "packet_window": 2,
+      "rate_bps": 1293680,
+      "received": 2,
+      "sent": 2,
+      "srtt_us": 2017
+    },
+    "state_before_dispatch": {
+      "algorithm": "udp-prague",
+      "alpha": 0,
+      "ce": 0,
+      "failure": "<nil>",
+      "inflight_bytes": 2488,
+      "lost": 0,
+      "packet_size": 1200,
+      "packet_window": 10,
+      "rate_bps": 970872,
+      "received": 0,
+      "sent": 2,
+      "srtt_us": 0
+    }
+  },
+  "event": "controller_feedback",
+  "sequence": 7,
+  "time": "2026-11-15T01:50:44.380477Z"
+}

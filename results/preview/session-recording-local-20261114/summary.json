@@ -1,0 +1,218 @@
+{
+  "scope": "New local loopback recordings; no fresh physical testbed run",
+  "recorded_date": "2026-11-14",
+  "display_timezone": "America/Los_Angeles",
+  "raw_sdp_policy": "Exact descriptions retained only under ignored results/raw; shared copies redact ICE username/password.",
+  "physical_recording_status": "Pending: server requires interactive SSH authentication; earlier physical call did not preserve SDP.",
+  "runs": [
+    {
+      "run_id": "local-20261115T015044244129Z",
+      "controller": "prague",
+      "feedback": "ccfb",
+      "scope": "local loopback; no physical bottleneck",
+      "sender_duration_limit_seconds": 6,
+      "receiver_last_sample": {
+        "time": "2026-11-14T17:50:50.25996-08:00",
+        "level": "INFO",
+        "msg": "receiver metrics",
+        "role": "receiver",
+        "packets": 352,
+        "rtp_payload_bytes": 329132,
+        "rtp_payload_mbps": 0.5146953782479831,
+        "ce_count": 0,
+        "ect1_count": 352,
+        "nonect_count": 0
+      },
+      "matching_offer": true,
+      "matching_answer": true,
+      "controller_dispatches": 232,
+      "parsed_packet_types": {
+        "*rtcp.CCFeedbackReport": 226,
+        "*rtcp.ReceiverReport": 6
+      },
+      "generated_ccfb_reports": 226,
+      "generated_and_decoded_ccfb_equal": true,
+      "recording_complete": true,
+      "artifacts": {
+        "results/raw/local-20261115T015044244129Z/sender-recording/remote-answer.sdp": "5ab03cc11da03f1cec200618a5a1bf937ca7823315625c621dcf1e232965d45b",
+        "results/raw/local-20261115T015044244129Z/sender-recording/local-offer.sdp": "134d51e0aa1f8149a57d4aa9a167d2c553df92bc245986b7f1d55383a66483c0",
+        "results/raw/local-20261115T015044244129Z/sender-recording/session-trace.jsonl": "d369efdac276d96e0cbe2194a444e8750362a3969d24ccfd298edea02f14c731",
+        "results/raw/local-20261115T015044244129Z/sender-recording/local-offer.raw.sdp": "1ae59ba93b9b6a679d21bde23ce1668d048c4efede069a191c21513bb54e59a8",
+        "results/raw/local-20261115T015044244129Z/sender-recording/remote-answer.raw.sdp": "09815140580ea96192eadc1f9294ffa2e110f1355261102d68281e10cd2be0a0",
+        "results/raw/local-20261115T015044244129Z/receiver-recording/local-answer.sdp": "5ab03cc11da03f1cec200618a5a1bf937ca7823315625c621dcf1e232965d45b",
+        "results/raw/local-20261115T015044244129Z/receiver-recording/local-answer.raw.sdp": "09815140580ea96192eadc1f9294ffa2e110f1355261102d68281e10cd2be0a0",
+        "results/raw/local-20261115T015044244129Z/receiver-recording/remote-offer.raw.sdp": "1ae59ba93b9b6a679d21bde23ce1668d048c4efede069a191c21513bb54e59a8",
+        "results/raw/local-20261115T015044244129Z/receiver-recording/remote-offer.sdp": "134d51e0aa1f8149a57d4aa9a167d2c553df92bc245986b7f1d55383a66483c0",
+        "results/raw/local-20261115T015044244129Z/receiver-recording/session-trace.jsonl": "a999532bffae59392a38237dc476e789472ffe39fbb440ee6bf9392e9da88422"
+      },
+      "binary_sha256": "71fec265fc38d9f5980071ec68a407d387bfba1189c6d35f1bdaa18b85eca262",
+      "video_sha256": "20e9befd853d092b4bccc6658f10d8104a8221e8a729b66eb2d3442f1749e77a",
+      "first_packet_accounting_transition": {
+        "data": {
+          "arrival_time_offset_unit": "1/1024 second",
+          "controller": "prague",
+          "ecn_codepoints": "0=Non-ECT, 1=ECT(1), 2=ECT(0), 3=CE",
+          "handling_error": "",
+          "outcome": "returned_without_error",
+          "packet_types": [
+            "*rtcp.CCFeedbackReport"
+          ],
+          "packets": [
+            {
+              "SenderSSRC": 0,
+              "ReportBlocks": [
+                {
+                  "MediaSSRC": 3480738283,
+                  "BeginSequence": 30003,
+                  "MetricBlocks": [
+                    {
+                      "Received": true,
+                      "ECN": 1,
+                      "ArrivalTimeOffset": 12
+                    },
+                    {
+                      "Received": true,
+                      "ECN": 1,
+                      "ArrivalTimeOffset": 2
+                    }
+                  ]
+                }
+              ],
+              "ReportTimestamp": 2389991702
+            }
+          ],
+          "path": "Pion cc.BindRTCPReader -> Attributes.GetRTCPPackets -> BandwidthEstimator.WriteRTCP",
+          "state_after_dispatch": {
+            "algorithm": "udp-prague",
+            "alpha": 0,
+            "ce": 0,
+            "failure": "<nil>",
+            "inflight_bytes": 0,
+            "lost": 0,
+            "packet_size": 1200,
+            "packet_window": 2,
+            "rate_bps": 1293680,
+            "received": 2,
+            "sent": 2,
+            "srtt_us": 2017
+          },
+          "state_before_dispatch": {
+            "algorithm": "udp-prague",
+            "alpha": 0,
+            "ce": 0,
+            "failure": "<nil>",
+            "inflight_bytes": 2488,
+            "lost": 0,
+            "packet_size": 1200,
+            "packet_window": 10,
+            "rate_bps": 970872,
+            "received": 0,
+            "sent": 2,
+            "srtt_us": 0
+          }
+        },
+        "event": "controller_feedback",
+        "sequence": 7,
+        "time": "2026-11-15T01:50:44.380477Z"
+      },
+      "sdp_excerpt": [
+        "m=video 9 UDP/TLS/RTP/SAVPF 96 97 102 103 104 105 106 107 108 109 127 125 39 40 116 117 45 46 98 99 100 101 112 113",
+        "a=ice-ufrag:[REDACTED]",
+        "a=ice-pwd:[REDACTED]",
+        "a=rtcp-mux",
+        "a=rtpmap:96 VP8/90000",
+        "a=rtcp-fb:96 goog-remb",
+        "a=rtcp-fb:96 ccm fir",
+        "a=rtcp-fb:96 nack",
+        "a=rtcp-fb:96 nack pli",
+        "a=rtcp-fb:96 ack ccfb"
+      ]
+    },
+    {
+      "run_id": "local-20261115T015041262378Z",
+      "controller": "gcc",
+      "feedback": "ccfb",
+      "scope": "local loopback; no physical bottleneck",
+      "sender_duration_limit_seconds": 6,
+      "receiver_last_sample": {
+        "time": "2026-11-14T17:50:47.29425-08:00",
+        "level": "INFO",
+        "msg": "receiver metrics",
+        "role": "receiver",
+        "packets": 402,
+        "rtp_payload_bytes": 373253,
+        "rtp_payload_mbps": 0.5146991752406506,
+        "ce_count": null,
+        "ect1_count": null,
+        "nonect_count": null
+      },
+      "matching_offer": true,
+      "matching_answer": true,
+      "controller_dispatches": 65,
+      "parsed_packet_types": {
+        "*rtcp.CCFeedbackReport": 59,
+        "*rtcp.ReceiverReport": 6
+      },
+      "generated_ccfb_reports": null,
+      "generated_and_decoded_ccfb_equal": null,
+      "recording_complete": true,
+      "artifacts": {
+        "results/raw/local-20261115T015041262378Z/sender-recording/remote-answer.sdp": "f447a7f4391a3b1f910d0e54df93bb0b8ce7b3b76f16c0fde3a3669b17340db8",
+        "results/raw/local-20261115T015041262378Z/sender-recording/local-offer.sdp": "5c4cabe753d80df8dc9e0c0af1499756a466fba2ea726cdd60b10c00ca36045d",
+        "results/raw/local-20261115T015041262378Z/sender-recording/session-trace.jsonl": "86a3f1f504651107a3efe0c0be57f9a10a9fea1ecc0598c9aef9bf979e59ee2e",
+        "results/raw/local-20261115T015041262378Z/sender-recording/local-offer.raw.sdp": "86c10677179e42c955659f01dbb92f3ec7ed2c7f9b24fd3d203b95f1d5ed69f8",
+        "results/raw/local-20261115T015041262378Z/sender-recording/remote-answer.raw.sdp": "fe7ce4a8268801ede5d70ede761fb619ae1ff880694c35172a2be2fabacb766e",
+        "results/raw/local-20261115T015041262378Z/receiver-recording/local-answer.sdp": "f447a7f4391a3b1f910d0e54df93bb0b8ce7b3b76f16c0fde3a3669b17340db8",
+        "results/raw/local-20261115T015041262378Z/receiver-recording/local-answer.raw.sdp": "fe7ce4a8268801ede5d70ede761fb619ae1ff880694c35172a2be2fabacb766e",
+        "results/raw/local-20261115T015041262378Z/receiver-recording/remote-offer.raw.sdp": "86c10677179e42c955659f01dbb92f3ec7ed2c7f9b24fd3d203b95f1d5ed69f8",
+        "results/raw/local-20261115T015041262378Z/receiver-recording/remote-offer.sdp": "5c4cabe753d80df8dc9e0c0af1499756a466fba2ea726cdd60b10c00ca36045d",
+        "results/raw/local-20261115T015041262378Z/receiver-recording/session-trace.jsonl": "4ebbb1db5f7746f959d7a743073eabb202896c948ccdd78aeb0c9dc696156bee"
+      },
+      "binary_sha256": "71fec265fc38d9f5980071ec68a407d387bfba1189c6d35f1bdaa18b85eca262",
+      "video_sha256": "20e9befd853d092b4bccc6658f10d8104a8221e8a729b66eb2d3442f1749e77a"
+    },
+    {
+      "run_id": "local-20261115T015037045594Z",
+      "controller": "gcc",
+      "feedback": "twcc",
+      "scope": "local loopback; no physical bottleneck",
+      "sender_duration_limit_seconds": 6,
+      "receiver_last_sample": {
+        "time": "2026-11-14T17:50:43.815817-08:00",
+        "level": "INFO",
+        "msg": "receiver metrics",
+        "role": "receiver",
+        "packets": 400,
+        "rtp_payload_bytes": 371962,
+        "rtp_payload_mbps": 0.5192046206355079,
+        "ce_count": null,
+        "ect1_count": null,
+        "nonect_count": null
+      },
+      "matching_offer": true,
+      "matching_answer": true,
+      "controller_dispatches": 65,
+      "parsed_packet_types": {
+        "*rtcp.TransportLayerCC": 59,
+        "*rtcp.ReceiverReport": 6
+      },
+      "generated_ccfb_reports": null,
+      "generated_and_decoded_ccfb_equal": null,
+      "recording_complete": true,
+      "artifacts": {
+        "results/raw/local-20261115T015037045594Z/sender-recording/remote-answer.sdp": "80c70bbc8c8186b5da4aed983c025267f7c3ef6c5646adf3fc0b149a6b8eba99",
+        "results/raw/local-20261115T015037045594Z/sender-recording/local-offer.sdp": "c8c68c3397adc836527ae3db7a4f5a3e56a0b298173a1f9c49fab86906c7b982",
+        "results/raw/local-20261115T015037045594Z/sender-recording/session-trace.jsonl": "c2ef0d51cb7a2e9efbd9450d39c9784f515eb4fd49c487995fc2c61cc011328d",
+        "results/raw/local-20261115T015037045594Z/sender-recording/local-offer.raw.sdp": "cd905d0c3933f64fffb511f650ec7d308a0a73f13786761334e834c88a3e4bc3",
+        "results/raw/local-20261115T015037045594Z/sender-recording/remote-answer.raw.sdp": "601a6561c466dbb002b5a22541f2e645efe1498ecc1850fd29358160911ee679",
+        "results/raw/local-20261115T015037045594Z/receiver-recording/local-answer.sdp": "80c70bbc8c8186b5da4aed983c025267f7c3ef6c5646adf3fc0b149a6b8eba99",
+        "results/raw/local-20261115T015037045594Z/receiver-recording/local-answer.raw.sdp": "601a6561c466dbb002b5a22541f2e645efe1498ecc1850fd29358160911ee679",
+        "results/raw/local-20261115T015037045594Z/receiver-recording/remote-offer.raw.sdp": "cd905d0c3933f64fffb511f650ec7d308a0a73f13786761334e834c88a3e4bc3",
+        "results/raw/local-20261115T015037045594Z/receiver-recording/remote-offer.sdp": "c8c68c3397adc836527ae3db7a4f5a3e56a0b298173a1f9c49fab86906c7b982",
+        "results/raw/local-20261115T015037045594Z/receiver-recording/session-trace.jsonl": "c35587defa38b6e6361be93bb2999815a3cf967042086c594285e1cfa52c5efd"
+      },
+      "binary_sha256": "71fec265fc38d9f5980071ec68a407d387bfba1189c6d35f1bdaa18b85eca262",
+      "video_sha256": "20e9befd853d092b4bccc6658f10d8104a8221e8a729b66eb2d3442f1749e77a"
+    }
+  ]
+}

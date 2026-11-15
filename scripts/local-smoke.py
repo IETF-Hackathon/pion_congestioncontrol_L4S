@@ -42,11 +42,11 @@ def main():
               "--interface", loopback, "--local-ip", "127.0.0.1", "--loopback"]
     receiver = None
     sender_command = common + ["--role", "sender", "--peer", f"http://127.0.0.1:{port}/offer",
-                               "--video", str(video), "--duration", "6s"]
+                               "--video", str(video), "--duration", "6s", "--record-dir", str(folder / "sender-recording")]
     with (folder / "receiver.jsonl").open("w") as receiver_log, (folder / "sender.jsonl").open("w") as sender_log:
         try:
             receiver = subprocess.Popen(common + ["--role", "receiver", "--listen", f"127.0.0.1:{port}",
-                                                 "--duration", "12s"], stdout=receiver_log, stderr=subprocess.STDOUT, cwd=ROOT)
+                                                 "--duration", "12s", "--record-dir", str(folder / "receiver-recording")], stdout=receiver_log, stderr=subprocess.STDOUT, cwd=ROOT)
             deadline = time.monotonic() + 5
             ready = False
             while time.monotonic() < deadline and receiver.poll() is None:
@@ -96,6 +96,7 @@ def main():
     summary = {"scope": "local loopback; no physical bottleneck", "controller": args.controller,
                "feedback": args.feedback, "binary_sha256": digest(binary), "video_sha256": digest(video),
                "receiver_last_sample": receivers[-1], "sender_last_sample": senders[-1]}
+    summary["recording"] = {role: str(folder / f"{role}-recording") for role in ("sender", "receiver")}
     summary["git_commit"] = None
     summary["git_status"] = "source snapshot without Git metadata"
     if (ROOT / ".git").exists():

@@ -7,6 +7,65 @@ The separate server-side host is now installed at `selabs@192.168.1.216` on
 observed media delivery and CE feedback into Prague; full congestion validation
 and independent bottleneck path/settings evidence remain pending.
 
+## Sequence diagram
+
+Rendered previews: [PNG](../images/pion-prague-sequence.png) and
+[SVG](../images/pion-prague-sequence.svg). See [SDP and feedback recordings](recordings.md)
+for the offer/answer artifacts and actual Pion controller-dispatch trace.
+
+This sequence describes the experimental Prague/CCFB call between the physical
+Linux sender and Mac receiver. The network participant represents the intended
+lab path; the exact forwarding path, active qdisc and device introducing CE
+still need independent operator evidence. Initial signaling arrows are logical
+exchanges between endpoints.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Prague controller
+    participant S as Linux Pion sender<br/>192.168.1.216
+    participant N as Lab network<br/>lld-black4 path intended
+    participant R as Mac Pion receiver<br/>192.168.1.79
+
+    Note over C,S: Same sender process, GCC disabled for this run
+    R->>R: Start receiver and HTTP signaling
+    S->>R: GET /healthz
+    R-->>S: Prague, CCFB and ECN capability confirmed
+    S->>R: POST /offer with SDP and gathered ICE candidates
+    R-->>S: SDP answer with gathered ICE candidates
+    S->>R: ICE checks and DTLS handshake
+    R-->>S: Secure media transport established
+    Note over S,R: Observed ICE pair .216:50000 and .79:50000
+
+    loop Fixed VP8 media and periodic feedback
+        S->>C: Request pacing/window admission for RTP packet
+        C-->>S: Allow send when rate and window permit
+        S->>N: SRTP over UDP, outer IP marked ECT(1)
+        N->>R: Deliver SRTP with received ECT(1) or CE
+        R->>R: Save socket ECN bits and arrival time
+        R->>R: Authenticate SRTP, correlate SSRC and sequence
+        R->>R: Record arrival and ECN for RFC 8888 feedback
+        R-->>N: SRTCP CCFB with arrival and ECN reports, Non-ECT
+        N-->>S: Return congestion feedback
+        S->>C: Process packet reports, CE counts and RTT samples
+        C-->>S: Recalculate pacing rate and window
+    end
+
+    Note over S,R: Observed 30-second sender run: 2078 RTP received<br/>2076 ECT(1), 2 CE, sender Prague state recorded 2 CE
+    Note over N,R: Marking device and live bottleneck settings remain unverified
+    Note over C,S: Source stays fixed, encoder adaptation remains pending
+
+    opt Invalid ECN or feedback timeout
+        S->>S: Stop the run with an error
+    end
+```
+
+The rate/window update is implemented; this diagram does not claim a measured
+rate reduction or sustained congestion response in the light-load physical run.
+The error branch shows the implemented failure policy, rather than an error
+observed in that run. General SDP ECN negotiation and dynamic controller fallback
+remain pending. See the [recorded run](../../results/preview/prague-lab-selabs216-20261114.json).
+
 ## Controller and packet path
 
 - `internal/prague/native/` vendors the unmodified Apache-2.0 UDP-Prague core

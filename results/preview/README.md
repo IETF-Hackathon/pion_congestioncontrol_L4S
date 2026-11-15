@@ -1,5 +1,20 @@
 # Recorded transport previews
 
+The later [captured higher-load Prague run](prague-load-captured-20261114.json)
+completed at 17:56–17:57 PST on 14 November. A 28.9 Mbps nominal fixed VP8 source
+and 25 Mbps initial controller target produced about 8.5 Mbps received RTP
+payload throughput. The monitor reports 9.039 Mbps for the full UDP frame flow,
+27,166 ECT(1) media packets, zero CE, and median/P99 transit delays of
+10.014/10.069 ms. These rates use different byte accounting and time windows.
+The exact media flow was recorded across lld-black4's CMCI and NSI capture
+interfaces. View the [local chart](prague-load-captured-20261114.png) or the
+[dashboard result](http://lld-black4.local/data/prague-load-30m-20261115T015241Z_2026_11_15_02_56/).
+The transit delay includes the fixed path delay; it is not pure queue delay.
+Actual delivery stayed below the diagram's 20 Mbps capacity, and sustained
+congestion response, the sender-rate limit, live qdisc settings and adaptive
+encoding remain unvalidated. The JSON preserves failed preparation attempts
+separately from this successful run and records raw-artifact hashes.
+
 The [physical Prague run](prague-lab-selabs216-20261114.json) records the 30-second
 call at 17:00 PST on 14 November: sender `192.168.1.216` / `enp1s0`, Mac receiver
 `192.168.1.79` / `en7`. Receiver counters reached 2,078 RTP (2,076 ECT(1), 2 CE,

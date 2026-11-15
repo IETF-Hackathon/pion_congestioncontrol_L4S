@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "run_id": "prague-load-30m-20261115T015241Z",
+  "scope": "Physical higher-load Pion Prague call with matched two-sided lld-black4 capture; not sustained congestion or adaptive-encoder validation",
+  "sender_started_at_utc": "2026-11-15T01:56:58.276874+00:00",
+  "sender_finished_at_utc": "2026-11-15T01:57:28.376261+00:00",
+  "sender_duration_seconds": 30.099387,
+  "capture_seconds_requested": 60,
+  "dashboard_result_url": "http://lld-black4.local/data/prague-load-30m-20261115T015241Z_2026_11_15_02_56/",
+  "dashboard_plot_urls": {
+    "downstream": "http://lld-black4.local/data/prague-load-30m-20261115T015241Z_2026_11_15_02_56/Aggregate_thruput_downstream.pdf",
+    "upstream": "http://lld-black4.local/data/prague-load-30m-20261115T015241Z_2026_11_15_02_56/Aggregate_thruput_upstream.pdf"
+  },
+  "capture_vantages": {
+    "cmci": "enp3s0",
+    "nsi": "enp2s0",
+    "basis": "Capture log lists both interfaces; read-only UI config maps CMCI to enp3s0 and NSI to enp2s0."
+  },
+  "controller": "prague",
+  "feedback": "ccfb",
+  "source": {
+    "path": "media/prague-load-30mbps-720p60.ivf",
+    "sha256": "63b8d969e71671b681ca3c5a4191144d13cb093e9dbcc368f333cfd1e54c2f46",
+    "bytes": 7234829,
+    "fps": 60.0,
+    "frames": 120,
+    "largest_frame_bytes": 644064,
+    "nominal_payload_bps": 28933428.0,
+    "validation": "All frames fit pinned sender <=1MiB; clip <=32MiB and starts with keyframe"
+  },
+  "initial_controller_target_bps": 25000000,
+  "observations": {
+    "receiver_rtp_packets": 27166,
+    "receiver_rtp_payload_bytes": 31985244,
+    "receiver_rtp_payload_mbps_over_sender_process": 8.501234659695893,
+    "receiver_ect1_packets": 27166,
+    "receiver_ce_packets": 0,
+    "receiver_nonect_rtp_packets": 0,
+    "sender_prague_ce_last_sample": 0,
+    "sender_feedback_reports_last_sample": 1449,
+    "monitor_mean_udp_frame_mbps": 9.039,
+    "monitor_forward_dropped_packets": 0,
+    "monitor_reverse_udp_dropped_packets": 1,
+    "endpoint_warning_error_events": 0
+  },
+  "monitor_downstream_summary": {
+    "Flow Number": "2",
+    "Flow ID": "UDP [192.168.1.216 50000] to [192.168.1.79 50000]",
+    "Packet Delay P0 (ms)": "10.004",
+    "Packet Delay P50 (ms)": "10.014",
+    "Packet Delay P90 (ms)": "10.016",
+    "Packet Delay P99 (ms)": "10.069",
+    "Packet Delay P99.9 (ms)": "10.584",
+    "PDV P99 (ms)": "0.064",
+    "PDV P99.9 (ms)": "0.581",
+    "Mean data rate (Mbps)": "9.039",
+    "P10 of data rate (Mbps)": "1.407",
+    "P10 % of mean": "15.9",
+    "Ramp time to 90% Tput (ms)": "200",
+    "Num Packets": "27234",
+    "Num NotECT": "68",
+    "Num ECT0": "0",
+    "Num ECT1": "27166",
+    "Num CE": "0",
+    "Dropped Packets": "0",
+    "Missing Packets": "0",
+    "Num Sanctioned": "0"
+  },
+  "monitor_upstream_summary": {
+    "Flow Number": "2",
+    "Flow ID": "UDP [192.168.1.79 50000] to [192.168.1.216 50000]",
+    "Packet Delay P0 (ms)": "10.005",
+    "Packet Delay P50 (ms)": "10.069",
+    "Packet Delay P90 (ms)": "10.078",
+    "Packet Delay P99 (ms)": "18.166",
+    "Packet Delay P99.9 (ms)": "93.482",
+    "PDV P99 (ms)": "8.159",
+    "PDV P99.9 (ms)": "83.477",
+    "Mean data rate (Mbps)": "0.050",
+    "P10 of data rate (Mbps)": "0.008",
+    "P10 % of mean": "17.3",
+    "Ramp time to 90% Tput (ms)": "100",
+    "Num Packets": "1588",
+    "Num NotECT": "1587",
+    "Num ECT0": "0",
+    "Num ECT1": "0",
+    "Num CE": "0",
+    "Dropped Packets": "1",
+    "Missing Packets": "0",
+    "Num Sanctioned": "0"
+  },
+  "receiver_post_transfer_sample": {
+    "time": "2026-11-14T17:57:28.804185-08:00",
+    "level": "INFO",
+    "msg": "receiver metrics",
+    "role": "receiver",
+    "packets": 27166,
+    "rtp_payload_bytes": 31985244,
+    "rtp_payload_mbps": 5.683227297078458,
+    "ce_count": 0,
+    "ect1_count": 27166,
+    "nonect_count": 0
+  },
+  "sender_last_periodic_sample": {
+    "time": "2026-11-14T18:57:27.587235767-07:00",
+    "level": "INFO",
+    "msg": "sender metrics",
+    "role": "sender",
+    "controller": "prague",
+    "target_bps": 51271720,
+    "congestion_feedback_reports": 1449,
+    "prague": {
+      "algorithm": "udp-prague",
+      "alpha": 0,
+      "ce": 0,
+      "failure": "<nil>",
+      "inflight_bytes": 32233,
+      "lost": 17,
+      "packet_size": 1200,
+      "packet_window": 116,
+      "rate_bps": 51271720,
+      "received": 26398,
+      "sent": 26441,
+      "srtt_us": 21624
+    },
+    "ce_count": 0,
+    "encoder_target_bps": null
+  },
+  "selected_ice_pairs": {
+    "sender": {
+      "time": "2026-11-14T18:56:58.538083731-07:00",
+      "level": "INFO",
+      "msg": "selected ICE pair",
+      "role": "sender",
+      "local": "udp4 host 192.168.1.216:50000 (resolved: 192.168.1.216:50000)",
+      "remote": "udp4 host 192.168.1.79:50000 (resolved: 192.168.1.79:50000)"
+    },
+    "receiver": {
+      "time": "2026-11-14T17:56:58.621674-08:00",
+      "level": "INFO",
+      "msg": "selected ICE pair",
+      "role": "receiver",
+      "local": "udp4 host 192.168.1.79:50000 (resolved: 192.168.1.79:50000)",
+      "remote": "udp4 host 192.168.1.216:50000 (resolved: 192.168.1.216:50000)"
+    }
+  },
+  "process_outcomes": {
+    "sender": {
+      "status": "exited",
+      "exit_code": 0,
+      "binary_sha256": "02faabdbad523d0e0dcd079bdc21b9737ab2594d9632eba60e78d8e994e12ed3",
+      "video_sha256": "63b8d969e71671b681ca3c5a4191144d13cb093e9dbcc368f333cfd1e54c2f46"
+    },
+    "receiver": {
+      "status": "interrupted",
+      "exit_code": 0,
+      "binary_sha256": "71fec265fc38d9f5980071ec68a407d387bfba1189c6d35f1bdaa18b85eca262",
+      "video_sha256": null
+    }
+  },
+  "measurement_notes": [
+    "Monitor mean data rate counts captured frame lengths and has a different time window from receiver RTP payload rate.",
+    "Monitor UDP flow includes 68 Non-ECT handshake/control packets as well as 27166 ECT(1) RTP packets.",
+    "Packet delay is measured between monitor vantages, including approximately 10 ms fixed delay; it is not pure queue delay.",
+    "Both endpoint samples are periodic and have independent timestamps; controller provisional lost counters are not synchronized final end-to-end loss.",
+    "Other background flows were present; this was not a controlled fairness comparison.",
+    "Monitor result folder uses its own local clock; endpoint metadata and manifest record UTC.",
+    "Monitor log reports missing snmpwalk, so DOCSIS MIB counters were unavailable.",
+    "The ordinary flow CSV contains both ingress and egress observations. The chart uses one paired latency-CSV row per packet, preventing doubled throughput."
+  ],
+  "not_established": [
+    "Live qdisc mode and configured shaping capacity",
+    "Sustained CE-driven Prague response at or above bottleneck capacity",
+    "Cause of the gap between nominal source/controller target and actual throughput",
+    "Adaptive encoding and matched GCC baseline"
+  ],
+  "unavailable_metrics": {
+    "pure_queue_delay_ms": null,
+    "deduplicated_application_goodput_bps": null,
+    "encoder_target_bps": null,
+    "synchronized_end_to_end_loss_fraction": null
+  },
+  "runner_provenance": {
+    "run_id": "prague-load-30m-20261115T015241Z",
+    "capture_seconds": 60,
+    "sender_seconds": 30,
+    "initial_controller_target_bps": 25000000,
+    "nominal_source_bps": 28933428.0,
+    "source_adaptation": false,
+    "capture_started": false,
+    "receiver_started": false,
+    "sender_started": false,
+    "original_config_sha256": "d598ea5b4f56a4a1ed7fe61fd9b32137ca5d09886e49abbdb30b90bfa9530f9a",
+    "prior_preflight_run_id": "prague-load-30m-20261115T014212Z",
+    "runner_source_commit": "e53d23f",
+    "runner_source_sha256": "832dd7247965ed2c15e5cd1dcebe90681d67faf629f8f47bf407098ee2cb99be",
+    "runner_snapshot_sha256": "ed92e20711a71dc07aa207577b725c75f54f6f4ae87eeef7f33867ea60ccb553",
+    "runner_note": "Previously tested helper pinned to match existing binaries; only ROOT path adjusted. Working runner adds an unsupported recording flag.",
+    "prior_capture_attempt": "prague-load-30m-20261115T014509Z",
+    "prior_capture_result": "Input rejected before media: IVF frame exceeded 1MiB; capture completed and outputs saved",
+    "source_validation": "All frames fit pinned sender <=1MiB; clip <=32MiB and starts with keyframe"
+  },
+  "raw_artifact_sha256": {
+    "results/raw/prague-load-30m-20261115T015241Z/config.json": "9a2f8a871a2304ec4b723053aac247f1cabb62ca46a1aabce87e3d2d4ed08a85",
+    "results/raw/prague-load-30m-20261115T015241Z/source.ivf": "63b8d969e71671b681ca3c5a4191144d13cb093e9dbcc368f333cfd1e54c2f46",
+    "results/raw/prague-load-30m-20261115T015241Z/testbed-pinned.py": "ed92e20711a71dc07aa207577b725c75f54f6f4ae87eeef7f33867ea60ccb553",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/manifest.json": "d26e814a2ff01541368c8b329304a22c5642a15d518b85b8849bb55a45764fc0",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/config-ui.html": "3d497ce9dec9b463aaf6252f93b0a2b2457f8c572faebdc163d0f291241a2b48",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/downloaded-artifacts.json": "79ff883c2a35f21712bd4081a1deddd147c3a3eff1eec2f3d2f365476fb665e3",
+    "results/raw/prague-load-30m-20261115T015241Z/sender/metadata.json": "c48ff6683ece67161aea327d8bb2f2e422eaabfa08e78a81862913977b89eb28",
+    "results/raw/prague-load-30m-20261115T015241Z/sender/endpoint.jsonl": "fc1a59f6ecaa246c854b5e52291f411394e10e635a16fe30309fc9cea58ec019",
+    "results/raw/prague-load-30m-20261115T015241Z/sender/build-info.txt": "b3a09cb18821f5471b7a5c83dfdda93719e999cd18afb1f6df99c593718a8c34",
+    "results/raw/prague-load-30m-20261115T015241Z/receiver/metadata.json": "5fd93bc1bf94bda97ad5a0a19695526fc572edfbe65fadf47ef5aba1f796384c",
+    "results/raw/prague-load-30m-20261115T015241Z/receiver/endpoint.jsonl": "8b58c8a4feec60b6b4e1821b8f4848afaa1e5a5dcc81cdfa7527e6a39ff5c343",
+    "results/raw/prague-load-30m-20261115T015241Z/receiver/build-info.txt": "6e2f7d56458e846ddb469a69816965e62350553d0fcc853c32aa3aa920bb9e4d",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/summary_table_downstream.csv": "754baf81dd2fcda420a6872ebf194dc690ab285d21eed62df2db356b6605392f",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/summary_table_upstream.csv": "af10b9310fe666945854b388c3e22c465929177360a6bee1958399f96f8fc229",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/log.txt": "939d83926d9832693b9d822a19dcda042bbcf743a410ab834556d4ea2480a5ac",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/capture_cmci.pcapng": "fb3bb757559147dc7bba89ac2d774ad4793708cd500d0760d62f3906fb145f7a",
+    "results/raw/prague-load-30m-20261115T015241Z/monitor/capture_nsi.pcapng": "1fc4c07884fee54769d6de6291d61f3891e89a35a434778fc9f2bc784d0a9f9b"
+  },
+  "chart_packet_rows": 27234
+}
