@@ -1,0 +1,91 @@
+{
+  "scope": "one physical Mac; macOS sender -> Lima Linux VM receiver; no physical testbed traversal",
+  "run_id": "local-mac-to-vm-20261115003422Z",
+  "controller": "prague",
+  "feedback": "ccfb",
+  "sender_address": "192.168.64.1",
+  "sender_interface": "bridge100",
+  "receiver_address": "192.168.64.2",
+  "receiver_interface": "lima0",
+  "whole_sender_process_limit_seconds": 10,
+  "selected_ice_pairs": {
+    "sender": [
+      {
+        "time": "2026-11-14T16:34:52.100878-08:00",
+        "level": "INFO",
+        "msg": "selected ICE pair",
+        "role": "sender",
+        "local": "udp4 host 192.168.64.1:50000 (resolved: 192.168.64.1:50000)",
+        "remote": "udp4 host 192.168.64.2:50000 (resolved: 192.168.64.2:50000)"
+      }
+    ],
+    "receiver": [
+      {
+        "time": "2026-11-14T16:34:52.107809791-08:00",
+        "level": "INFO",
+        "msg": "selected ICE pair",
+        "role": "receiver",
+        "local": "udp4 host 192.168.64.2:50000 (resolved: 192.168.64.2:50000)",
+        "remote": "udp4 host 192.168.64.1:50000 (resolved: 192.168.64.1:50000)"
+      }
+    ]
+  },
+  "sender_last_sample": {
+    "time": "2026-11-14T16:34:58.101588-08:00",
+    "level": "INFO",
+    "msg": "sender metrics",
+    "role": "sender",
+    "controller": "prague",
+    "target_bps": 29141216,
+    "congestion_feedback_reports": 190,
+    "prague": {
+      "algorithm": "udp-prague",
+      "alpha": 0,
+      "ce": 0,
+      "failure": "<nil>",
+      "inflight_bytes": 1403,
+      "lost": 0,
+      "packet_size": 1200,
+      "packet_window": 7,
+      "rate_bps": 29141216,
+      "received": 400,
+      "sent": 402,
+      "srtt_us": 2127
+    },
+    "ce_count": 0,
+    "encoder_target_bps": null
+  },
+  "receiver_last_sample": {
+    "time": "2026-11-14T16:36:05.570268845-08:00",
+    "level": "INFO",
+    "msg": "receiver metrics",
+    "role": "receiver",
+    "packets": 437,
+    "rtp_payload_bytes": 403218,
+    "rtp_payload_mbps": 0,
+    "ce_count": 0,
+    "ect1_count": 437,
+    "nonect_count": 0
+  },
+  "process_status": {
+    "sender": {
+      "status": "exited",
+      "exit_code": 0,
+      "started_at": "2026-11-15T00:34:48.443134+00:00",
+      "finished_at": "2026-11-15T00:34:58.572820+00:00"
+    },
+    "receiver": {
+      "status": "interrupted",
+      "exit_code": 0,
+      "started_at": "2026-11-15T00:34:22.533743+00:00",
+      "finished_at": "2026-11-15T00:36:05.977206+00:00"
+    }
+  },
+  "raw_artifacts": "results/raw/local-mac-to-vm-20261115003422Z",
+  "measurement_limits": [
+    "No lld-black4, servers switch or external Ethernet traversal",
+    "Zero CE here does not establish marking behavior under congestion",
+    "Fixed prerecorded source; controller target is not measured network capacity",
+    "Samples have independent timestamps; not final synchronized totals"
+  ]
+}

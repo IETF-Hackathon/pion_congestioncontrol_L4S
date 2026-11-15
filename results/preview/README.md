@@ -1,11 +1,25 @@
-# Recorded local GCC preview
+# Recorded transport previews
+
+The [physical Prague run](prague-lab-selabs216-20261114.json) records the 30-second
+call at 17:00 PST on 14 November: sender `192.168.1.216` / `enp1s0`, Mac receiver
+`192.168.1.79` / `en7`. Receiver counters reached 2,078 RTP (2,076 ECT(1), 2 CE,
+0 Non-ECT); the sender's last sample recorded both CE marks in Prague state and
+924 feedback reports. The sender exited normally and the receiver was stopped
+afterward. Raw logs and metadata are retained under the matching ignored
+`results/raw/` run folder; the JSON records hashes and independent sample times.
+The [current topology](../../docs/images/pion-current-lab-setup.md) shows the
+user-confirmed placement and missing validation. This light-load check establishes
+endpoint transport and ECN feedback. It does not independently prove lld-black4
+traversal, live shaping settings, the marking device or congestion performance.
+
+## Earlier local runs
 
 The later [Prague local snapshot](prague-local-20261114.json) records a six-second
 Prague/CCFB loopback call after the integration: the receiver's last sample has
 358 RTP packets, all ECT(1), and zero CE; the sender's last sample has 205 CCFB
 reports. These samples have separate timestamps. Go tests, race checks, vet,
 eight Python runner tests, and local GCC/CCFB and GCC/TWCC calls pass. This is
-local evidence. The physical testbed run is awaiting a separate sender host.
+local evidence. The later physical result is recorded separately above.
 
 [`local-gcc-20261114.json`](local-gcc-20261114.json) summarizes the two GCC
 transport checks completed on 14 November 2026 around 15:00 PST. The single

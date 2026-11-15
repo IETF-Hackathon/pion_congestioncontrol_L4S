@@ -2,8 +2,10 @@
 
 The `feat/prague-cc-testbed` branch implements `--controller prague` on both
 Pion peers. This is an experimental integration for the direct IPv4 lab path.
-The physical `lld-black4` experiment still needs a separate server-side host;
-reachable management SSH services are not a substitute for that host.
+The separate server-side host is now installed at `selabs@192.168.1.216` on
+`enp1s0`, with the Mac receiver at `192.168.1.79` on `en7`. A two-host check has
+observed media delivery and CE feedback into Prague; full congestion validation
+and independent bottleneck path/settings evidence remain pending.
 
 ## Controller and packet path
 
@@ -84,17 +86,30 @@ python3 scripts/testbed.py doctor --role sender
 python3 scripts/testbed.py run --role sender --run-id prague-01
 ```
 
-On 14 November the laptop had active `en7`, address `192.168.1.79`; the user
-confirmed attachment behind lld-black4 with DualPI2/SRM. The exact active
-qdisc and shaping settings still need to be recorded for measured results.
-No sender IP/login has been supplied. The diagram's `.75`, `.71`, `.51` and
-`.1` answer SSH but identify network equipment. The existing `.212` endpoint
-did not answer SSH/HTTP during a bounded reachability check. Do not infer a
-server-side compute host or valid credentials from these observations.
+On 14 November at 17:00 PST, a 30-second Prague/CCFB sender run completed with
+exit code 0 from the separate Ubuntu host to the Mac. The selected ICE pair was
+`192.168.1.216:50000` ↔ `192.168.1.79:50000`. Receiver counters reached 2,078 RTP
+packets: 2,076 ECT(1), 2 CE and 0 Non-ECT. The sender's last periodic sample
+recorded 924 congestion-feedback reports and 2 CE in Prague state, with no
+controller failure. Sender and receiver counters have independent sampling
+times; they are not a synchronized final packet accounting or loss measurement.
+
+The user confirms the Mac's attachment behind lld-black4 and the server's
+attachment to the servers switch. The active qdisc, shaping settings, marking
+device and transparent forwarding path still need operator captures/counters.
+The supplied diagram's `.75` is management, not a Pion peer. No Pion program
+was installed on EdgeRouterX or a switch. See the [current setup overlay](../images/pion-current-lab-setup.md)
+and [run summary with hashes and samples](../../results/preview/prague-lab-selabs216-20261114.json).
+
+The sender lives at `/home/selabs/pion-l4s-interop` and uses a private Go toolchain
+through `./run-testbed.sh`. Its build, unit/race checks, vet, nine Python runner
+tests and server-local Prague check passed before the physical call. Installation
+was under the user's home directory, without changes to lab equipment or qdiscs.
 
 The fixed 500 kbps sample establishes transport at light load. A controller
 target can exceed offered media rate on this application-limited source; it is
 not measured link capacity. Frame production can slow while the synchronous
 Prague pacer waits. Adaptive encoding, bounded latency under changing capacity,
 loaded-link fairness, queue telemetry and complete POC metrics remain work to do.
-No physical Prague testbed result is claimed.
+The physical result above establishes the endpoint ECN feedback loop. It does
+not establish sustained congestion response, capacity, fairness or RFC conformance.

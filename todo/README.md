@@ -1,6 +1,15 @@
 # Pion L4S integration TODOs
 
-These tasks bridge the standalone [UDP-Prague sender/receiver](https://github.com/L4steam/udp_prague) to the planned Pion WebRTC endpoints. The experimental Pion adapter and local ECN feedback path are implemented. Physical testbed validation and source adaptation remain pending; see [implementation status](../docs/pion-l4s-interop/prague.md). See the [endpoint mapping](../docs/pion-l4s-interop/udp-prague-pion-mapping.md) for the design comparison.
+These tasks bridge the standalone [UDP-Prague sender/receiver](https://github.com/L4steam/udp_prague) to the Pion WebRTC endpoints. The experimental adapter now has a physical two-host ECN feedback observation: 2,078 RTP received, including 2 CE, with both CE marks recorded in sender Prague state. Sustained congestion validation and source adaptation remain pending; see [implementation status](../docs/pion-l4s-interop/prague.md), [current setup and missing work](../docs/images/pion-current-lab-setup.md), and [run evidence](../results/preview/prague-lab-selabs216-20261114.json). See the [endpoint mapping](../docs/pion-l4s-interop/udp-prague-pion-mapping.md) for the design comparison.
+
+## Current physical setup
+
+- [x] Install the separate sender on `selabs@192.168.1.216`, Ethernet `enp1s0`, at the servers switch (user-confirmed placement).
+- [x] Connect the Mac receiver at `192.168.1.79`, Ethernet `en7`, behind lld-black4 (user-confirmed placement).
+- [x] Observe direct Ethernet ICE media delivery and CE feedback in Prague state.
+- [ ] Independently verify lld-black4's forwarding path, active qdisc, capacity and delay with operator captures/counters.
+- [ ] Apply repeatable load through this same branch and correlate sustained CE, controller state and actual sending rate.
+- [ ] Implement general ECN negotiation and dynamic fallback for wider WebRTC interoperability; paired lab capability checks currently stop on ECN failure.
 
 ## TODO 1 — Pin and inspect the interfaces
 
@@ -30,7 +39,7 @@ These tasks bridge the standalone [UDP-Prague sender/receiver](https://github.co
 
 ## TODO 4 — Expose outer-IP ECN
 
-- [x] Mark outgoing ICE/UDP packets ECT(1) for the Prague run.
+- [x] Mark outgoing SRTP data ECT(1) for the Prague run, keeping STUN, DTLS and RTCP Non-ECT.
 - [x] Read the ECN field on received outer IP packets and expose CE observations to receiver feedback generation.
 - [x] Detect and report bleaching or invalid ECN behavior.
 - [ ] Verify the behavior on the selected operating system and exact ICE/UDP path.

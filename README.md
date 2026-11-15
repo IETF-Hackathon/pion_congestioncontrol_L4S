@@ -10,7 +10,7 @@ Use `/Users/albisht/ietf/pion-l4s-interop` as the working repository. All build 
 
 ## Status
 
-A runnable Pion sender/receiver supports GCC and an experimental UDP-Prague controller. Prague includes synchronous pacing, IPv4 ECT(1) marking, received ECN metadata, and ECN-aware RFC 8888 feedback. Local Prague/CCFB and GCC transport checks pass. Source adaptation, complete metrics, and physical testbed measurements remain pending. See [Prague integration and testbed status](docs/pion-l4s-interop/prague.md).
+A runnable Pion sender/receiver supports GCC and an experimental UDP-Prague controller. Prague includes synchronous pacing, IPv4 ECT(1) marking, received ECN metadata, and ECN-aware RFC 8888 feedback. A 30-second physical two-host check received 2,078 RTP packets (2,076 ECT(1), 2 CE); the sender's Prague state recorded both CE marks. This establishes endpoint transport and ECN feedback. Bottleneck path/settings evidence, sustained congestion measurements, source adaptation and a matched physical GCC baseline remain pending. See [Prague integration and testbed status](docs/pion-l4s-interop/prague.md).
 
 The [run preview in the project page](index.html#preview) shows the actual saved
 local GCC counters, technology/version summary, and next testbed commands. The
@@ -34,12 +34,22 @@ The build selects [`altanai/interceptor`](https://github.com/altanai/interceptor
 
 For a separate sender laptop, follow the [complete two-laptop procedure](docs/pion-l4s-interop/separate-laptop.md),
 including copying the current implementation, sharing config and verifying CE feedback.
-The [annotated topology](docs/images/pion-testbed-placement.png) shows exactly where both programs run and where their Ethernet cables connect.
+The [current setup overlay](docs/images/pion-current-lab-setup.md) shows the installed sender at `192.168.1.216` (`enp1s0`) and Mac receiver at `192.168.1.79` (`en7`), observed results, and remaining gaps. The server is installed under `/home/selabs/pion-l4s-interop`; SSH uses `ssh -F /dev/null selabs@192.168.1.216`. Both endpoints are available; the exact transparent bottleneck path still requires operator evidence. See the [recorded physical run](results/preview/prague-lab-selabs216-20261114.json).
+
+![Current physical Pion Prague setup and remaining work](docs/images/pion-current-lab-setup.png)
+
+A [separate overlay shows the verified one-Mac local VM loop](docs/images/pion-local-vm-loop.md):
+macOS sender on `bridge100` → Linux VM receiver on `lima0`. That call received
+437 ECT(1) RTP packets and returned CCFB feedback without traversing lld-black4.
+See the [recorded local run](results/preview/mac-to-vm-20261114.json). The current
+ignored `testbed/local.json` instead selects the physical `.216` sender and `.79`
+receiver. The VM is not in that physical call.
 
 To create your own Linux development server on this Mac, use
 [`scripts/server.py`](scripts/server.py); see [server setup and placement](docs/pion-l4s-interop/own-server.md).
 Its local VM network does not traverse the physical lab bottleneck. A host on
-the servers switch or IETF side is still needed for that physical experiment.
+the servers switch or IETF side is needed for that physical experiment; the
+available `.216` host now fills this role.
 
 Use the [testbed run guide](docs/pion-l4s-interop/testbed.md) for the full two-host procedure. The latest supplied diagram places **Altanai's client behind `lld-black4` (`192.168.1.75`)**, with a separate sender at the servers switch.
 
@@ -48,18 +58,18 @@ Server-side Pion sender -> servers switch -> lld-black4 -> laptop Pion receiver
                        <- RTCP feedback across the same path <-
 ```
 
-On both hosts, build the same revision, copy `testbed/lld-black4.example.json` to `testbed/local.json`, and fill both peers' assigned IPv4 addresses and Ethernet interface names. Then:
+For a new setup, build the same source on both hosts, copy `testbed/lld-black4.example.json` to `testbed/local.json`, and fill both peers' assigned IPv4 addresses and Ethernet interface names. Select `controller: prague` and `feedback: ccfb` for the current Prague check, or explicitly select GCC for a separate baseline. Use an unused run ID for each call:
 
 ```sh
 # Laptop: checks its lab interface/address/route, then receives until Ctrl+C.
 python3 scripts/testbed.py plan
 python3 scripts/testbed.py doctor --role receiver
-python3 scripts/testbed.py run --role receiver --run-id gcc-01
+python3 scripts/testbed.py run --role receiver --run-id prague-02
 
 # Separate server-side host, once the laptop receiver is running:
 bash scripts/make-media.sh
 python3 scripts/testbed.py doctor --role sender
-python3 scripts/testbed.py run --role sender --run-id gcc-01
+python3 scripts/testbed.py run --role sender --run-id prague-02
 ```
 
 The helper verifies the compiled Altanai replacements, filters ICE to the configured interface/IP and UDP ports, and records per-role logs, build details, config, and hashes under `results/raw/`. It never overwrites an existing run. Allow TCP 8080 on the receiver and UDP 50000–50100 on both peers, or configure operator-approved ports. Scripts inspect the local network; they do not configure lab gear, routes, host addresses, or firewalls. Endpoint checks cannot prove passage through a transparent bottleneck: confirm the flow in operator counters/captures.
