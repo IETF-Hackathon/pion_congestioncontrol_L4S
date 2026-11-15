@@ -1,0 +1,108 @@
+digraph PionPipeline {
+  graph [rankdir=LR, bgcolor="white", pad="0.35", nodesep="0.40", ranksep="1.10",
+         splines=polyline, fontname="Arial", labelloc=t, labeljust=l,
+         label=<<FONT POINT-SIZE="28" COLOR="#142A3F"><B>Pion Prague — component pipeline</B></FONT><BR ALIGN="LEFT"/>
+                <FONT POINT-SIZE="16" COLOR="#526477">Tested media and feedback path · FFmpeg is offline; interceptors are inside each Pion process</FONT><BR ALIGN="LEFT"/><BR ALIGN="LEFT"/>>];
+  node [shape=plain, fontname="Arial"];
+  edge [fontname="Arial", fontsize=13, color="#758696", fontcolor="#425466", arrowsize=0.8, penwidth=1.7];
+
+  prep [label=<
+    <TABLE BORDER="1" COLOR="#B9C6D1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="13">
+      <TR><TD BGCOLOR="#EEF3F7" ALIGN="LEFT"><FONT POINT-SIZE="19"><B>Before the test · on the Mac</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="16"><B>FFmpeg + libvpx encoder</B></FONT><BR ALIGN="LEFT"/>
+        <FONT POINT-SIZE="14">testsrc2 → encoded VP8 → .ivf file<BR ALIGN="LEFT"/>
+        File copied to the Ubuntu sender using SCP<BR ALIGN="LEFT"/>
+        FFmpeg does not run in the live media loop</FONT></TD></TR>
+    </TABLE>>];
+
+  sender [label=<
+    <TABLE BORDER="1" COLOR="#B9C6D1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="13">
+      <TR><TD PORT="head" BGCOLOR="#173B53" ALIGN="LEFT"><FONT COLOR="white" POINT-SIZE="20"><B>Ubuntu sender · 192.168.1.216</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="white" POINT-SIZE="13">One pion-l4s process · Ethernet enp1s0</FONT></TD></TR>
+      <TR><TD PORT="file" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>1 · IVF loader + frame ticker</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">readClip() loads saved VP8 frames<BR ALIGN="LEFT"/>Frame ticker repeats them at the file's frame rate</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#C96519">↓ encoded video frames</FONT></TD></TR>
+      <TR><TD PORT="packet" BGCOLOR="#F3F7FB" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>2 · Pion sample track / packetizer</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">WriteSample() → RTP packets<BR ALIGN="LEFT"/>Packetization only; encoding already happened</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#C96519">↓ plain RTP</FONT></TD></TR>
+      <TR><TD PORT="cc" BGCOLOR="#FFF3DD" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>3 · Sender congestion-control interceptor</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">Pion cc.BindLocalStream → Prague AddStream<BR ALIGN="LEFT"/>Go pacer applies rate + byte-window limits<BR ALIGN="LEFT"/>Per-packet waits can block WriteSample()</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#C96519">↓ paced RTP</FONT></TD></TR>
+      <TR><TD PORT="crypto" BGCOLOR="#F3F7FB" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>4 · Pion SRTP encryption</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">Authenticate/encrypt media with negotiated keys<BR ALIGN="LEFT"/>DTLS establishes keys during setup</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#C96519">↓ SRTP</FONT></TD></TR>
+      <TR><TD PORT="socket" BGCOLOR="#FFF6EF" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>5 · ICE + UDP mux + ECN socket</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">ecnSocket.WriteTo sets ECT(1) for SRTP<BR ALIGN="LEFT"/>Linux UDP/IP → Ethernet enp1s0<BR ALIGN="LEFT"/>STUN, DTLS and RTCP stay Non-ECT</FONT></TD></TR>
+      <TR><TD HEIGHT="12" BGCOLOR="#E7EDF2"></TD></TR>
+      <TR><TD PORT="rtcp" BGCOLOR="#EDF5FF" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>Feedback input to the same process</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">ICE → SRTCP authentication/decryption<BR ALIGN="LEFT"/>cc.BindRTCPReader parses RFC 8888 reports<BR ALIGN="LEFT"/>The application's ReadRTCP loop drives reads</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#2368AC">↓ received / CE / loss / timing</FONT></TD></TR>
+      <TR><TD PORT="core" BGCOLOR="#F2EDFA" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>Prague controller inside the sender</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">Go WriteRTCP → cgo bridge<BR ALIGN="LEFT"/>Vendored UDP-Prague C++ core<BR ALIGN="LEFT"/>Outputs pacing rate and packet window</FONT></TD></TR>
+    </TABLE>>];
+
+  control [label=<
+    <TABLE BORDER="1" COLOR="#B9C6D1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="12">
+      <TR><TD BGCOLOR="#EEF3F7" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>Setup and orchestration</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="14">Python testbed helper + SSH launch peers<BR ALIGN="LEFT"/>
+        Capture starts before the sender<BR ALIGN="LEFT"/><BR ALIGN="LEFT"/>
+        HTTP /healthz checks paired support<BR ALIGN="LEFT"/>
+        HTTP /offer exchanges SDP + ICE data<BR ALIGN="LEFT"/>
+        ICE/STUN checks connectivity<BR ALIGN="LEFT"/>
+        DTLS handshake establishes SRTP keys<BR ALIGN="LEFT"/><BR ALIGN="LEFT"/>
+        Setup traffic is separate from video</FONT></TD></TR>
+    </TABLE>>];
+
+  network [label=<
+    <TABLE BORDER="1" COLOR="#B9C6D1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="15">
+      <TR><TD BGCOLOR="#173B53"><FONT COLOR="white" POINT-SIZE="20"><B>Physical testbed path</B></FONT></TD></TR>
+      <TR><TD PORT="media" BGCOLOR="#FFF6EF"><FONT POINT-SIZE="17"><B>Servers switch</B></FONT><BR/><FONT COLOR="#C96519">↓ media toward the Mac</FONT><BR/><BR/>
+        <FONT POINT-SIZE="20"><B>lld-black4</B></FONT><BR/><FONT POINT-SIZE="14">Bridge + configured AQM/shaper<BR/>Congestion may change ECT(1) → CE</FONT></TD></TR>
+      <TR><TD PORT="feedback" BGCOLOR="#EDF5FF"><FONT POINT-SIZE="15"><B>SRTCP feedback returns</B></FONT><BR/><FONT POINT-SIZE="14">Same physical path and UDP ICE pair</FONT></TD></TR>
+      <TR><TD PORT="tap"><FONT POINT-SIZE="13">Capture taps: NSI enp2s0 / CMCI enp3s0</FONT></TD></TR>
+    </TABLE>>];
+
+  capture [label=<
+    <TABLE BORDER="1" COLOR="#B9C6D1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="12">
+      <TR><TD BGCOLOR="#EEF3F7" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>Bottleneck capture and results</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="14">dumpcap on both capture interfaces<BR ALIGN="LEFT"/>
+        PCAPNG → paired-flow analysis<BR ALIGN="LEFT"/>
+        CSV / PDF → lld-black4 UI<BR ALIGN="LEFT"/><BR ALIGN="LEFT"/>
+        Observes traffic; does not relay the video<BR ALIGN="LEFT"/>
+        Capture/analysis buffering uses FIFO/mbuffer</FONT></TD></TR>
+    </TABLE>>];
+
+  receiver [label=<
+    <TABLE BORDER="1" COLOR="#B9C6D1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="13">
+      <TR><TD PORT="head" BGCOLOR="#173B53" ALIGN="LEFT"><FONT COLOR="white" POINT-SIZE="20"><B>Mac receiver · 192.168.1.79</B></FONT><BR ALIGN="LEFT"/><FONT COLOR="white" POINT-SIZE="13">One pion-l4s process · Ethernet en7</FONT></TD></TR>
+      <TR><TD PORT="socket" BGCOLOR="#FFF6EF" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>1 · Ethernet + ECN UDP socket</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">en7 → macOS UDP/IP → ReadMsgUDP<BR ALIGN="LEFT"/>Save IP ECN bits + arrival time before decryption<BR ALIGN="LEFT"/>Keep the visible RTP SSRC / sequence identity</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#C96519">↓ SRTP + saved side metadata</FONT></TD></TR>
+      <TR><TD PORT="crypto" BGCOLOR="#F3F7FB" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>2 · Pion ICE demux + SRTP receiver</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">Authenticate and decrypt RTP</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#C96519">↓ authenticated RTP</FONT></TD></TR>
+      <TR><TD PORT="observer" BGCOLOR="#EAF6F0" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>3 · Custom ECN feedback interceptor</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">BindRemoteStream correlates SSRC / sequence<BR ALIGN="LEFT"/>Consume saved socket ECN only after authentication<BR ALIGN="LEFT"/>Pion ccfb.Recorder stores packet timing + ECN</FONT></TD></TR>
+      <TR><TD ALIGN="CENTER"><FONT COLOR="#C96519">↓ media consumed by the application</FONT></TD></TR>
+      <TR><TD PORT="app" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>4 · Application ReadRTP + counters</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">Count RTP packets / payload / ECT(1) / CE<BR ALIGN="LEFT"/>Write endpoint JSONL metrics<BR ALIGN="LEFT"/>This test consumes packets without video playback</FONT></TD></TR>
+      <TR><TD HEIGHT="12" BGCOLOR="#E7EDF2"></TD></TR>
+      <TR><TD PORT="feedback" BGCOLOR="#EDF5FF" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>Feedback branch · every 20 ms</B></FONT><BR ALIGN="LEFT"/><FONT POINT-SIZE="14">ccfb.Recorder.BuildReport → RFC 8888 CCFB<BR ALIGN="LEFT"/>Pion RTCP writer → SRTCP encryption<BR ALIGN="LEFT"/>ICE / UDP mux → same socket, Non-ECT</FONT></TD></TR>
+    </TABLE>>];
+
+  missing [label=<
+    <TABLE BORDER="1" COLOR="#D6AA58" CELLBORDER="0" CELLSPACING="0" CELLPADDING="12">
+      <TR><TD BGCOLOR="#FFF3DD" ALIGN="LEFT"><FONT POINT-SIZE="17"><B>Encoder adaptation is still missing</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><FONT POINT-SIZE="14">Prague controls sending and pacing.<BR ALIGN="LEFT"/>
+        It does not change the saved VP8 file or run FFmpeg.<BR ALIGN="LEFT"/>
+        Source-frame timing and pacing waits are rate gates<BR ALIGN="LEFT"/>
+        to investigate for the observed ~9 Mbps plateau.</FONT></TD></TR>
+    </TABLE>>];
+
+  {rank=same; prep; sender;}
+  {rank=same; control; network; capture;}
+  {rank=same; receiver; missing;}
+  prep -> sender [style=invis, weight=30];
+  prep:e -> control:w [style=invis, weight=300];
+  sender:head:e -> receiver:head:w [style=invis, weight=1000, minlen=2];
+  control -> network -> capture [style=invis, weight=30];
+  receiver -> missing [style=invis, weight=30];
+
+  prep:s -> sender:head:n [label="saved file → sender", constraint=false, color="#758696"];
+  sender:socket:e -> network:media:w [label="SRTP / UDP\nECT(1)", color="#D46A1F", fontcolor="#A94D10", penwidth=3];
+  network:media:e -> receiver:socket:w [label="ECT(1) or CE", color="#D46A1F", fontcolor="#A94D10", penwidth=3];
+
+  receiver:feedback:w -> network:feedback:e [label="encrypted RTCP / CCFB", color="#2368AC", fontcolor="#2368AC", style=dashed, penwidth=2.5, constraint=false];
+  network:feedback:w -> sender:rtcp:e [label="feedback → controller", color="#2368AC", fontcolor="#2368AC", style=dashed, penwidth=2.5, constraint=false];
+  sender:core:w -> sender:cc:w [label="rate + window", color="#98742A", fontcolor="#87621A", style=dashed, constraint=false];
+  receiver:observer:e -> receiver:feedback:e [label="report builder", color="#2368AC", fontcolor="#2368AC", style=dotted, constraint=false];
+  network:tap:s -> capture:n [label="two capture taps", color="#758696", style=dashed, constraint=false];
+}

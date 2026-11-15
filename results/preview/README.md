@@ -1,5 +1,21 @@
 # Recorded transport previews
 
+The [four-rate captured sweep](prague-rate-sweep-20261114.json) ran the requested
+0.5, ~15, ~25 and ~35 Mbps source levels in order, with a separate 30-second sender
+and 60-second lld-black4 capture for each. View the [comparison PNG](prague-rate-sweep-20261114.png)
+or [CSV](prague-rate-sweep-20261114.csv); each row links to its dashboard folder and
+flow plot. Monitor frame rates were 0.537, 9.053, 9.111 and 9.025 Mbps; receiver
+and monitor CE counts were 2, 0, 25 and 165. These are source-rate steps: the three
+higher levels did not reach their requested rates on the network.
+
+The ~25 and ~35 Mbps receivers logged closed-pipe errors during peer shutdown,
+leaving their periodic packet totals short of the complete capture. The ~35 case
+also had 15 monitor-reported forward UDP drops. Most of its 165 CE marks arrived
+after the last sender metrics snapshot, which recorded 1 CE; full feedback
+processing is therefore unverified. These qualifications and per-run hashes are
+retained in the JSON. Background traffic was not controlled, so differences in
+CE count cannot be attributed solely to the nominal source levels.
+
 The later [captured higher-load Prague run](prague-load-captured-20261114.json)
 completed at 17:56–17:57 PST on 14 November. A 28.9 Mbps nominal fixed VP8 source
 and 25 Mbps initial controller target produced about 8.5 Mbps received RTP
