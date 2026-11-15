@@ -1,5 +1,9 @@
 # Recorded transport previews
 
+The [explicit system 2 repeat](new-pion-v2-repeat-25m-20261115T193712Z.md) confirms that “New Pion: implementation under validation” is the implemented Linux timerfd/byte-credit scheduler used in the earlier three Prague trials. One fresh, separately captured repeat of that unchanged build measured 14.036 Mbps monitor frame throughput, 12.714 ms P99 transit, zero unmatched RTP identities and 2,216 capture CE marks versus 2,213 at the last sender feedback state. It is not pooled into the earlier cohort.
+
+The [new pacing comparison](pion-prague-pacing-v2-25m-20261115T190910Z.md) contrasts three captured Prague trials with the saved three-trial GCC baseline. Mean steady frame throughput was 13.120 Mbps for new Prague and 18.357 Mbps for GCC; the earlier single Prague observation was 8.856 Mbps. New Prague had zero unmatched RTP identities between taps and lower observed transit tails. See the [plot](pion-prague-pacing-v2-25m-20261115T190910Z.png), [JSON](pion-prague-pacing-v2-25m-20261115T190910Z.json) and [CSV](pion-prague-pacing-v2-25m-20261115T190910Z.csv) for per-run variation, CE feedback tails, waiting metrics and the unverified network/background-traffic limits. Frame throughput includes headers; these are exploratory transport results.
+
 The [four-rate captured sweep](prague-rate-sweep-20261114.json) ran the requested
 0.5, ~15, ~25 and ~35 Mbps source levels in order, with a separate 30-second sender
 and 60-second lld-black4 capture for each. View the [comparison PNG](prague-rate-sweep-20261114.png)

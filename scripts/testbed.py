@@ -55,6 +55,11 @@ def load_config(path):
         raise ValueError("schema_version must be 1")
     if config.get("controller") not in ("gcc", "prague"):
         raise ValueError("controller must be gcc or prague")
+    backend = config.get("prague_pacing_backend", "auto")
+    if backend not in ("auto", "portable", "linux-timerfd"):
+        raise ValueError("prague_pacing_backend must be auto, portable or linux-timerfd")
+    if config["controller"] != "prague" and backend != "auto":
+        raise ValueError("explicit Prague pacing backend requires controller=prague")
     if config["controller"] == "prague" and config.get("feedback") != "ccfb":
         raise ValueError("Prague requires feedback=ccfb for ECN feedback")
     if config.get("feedback") not in ("ccfb", "twcc"):
@@ -198,7 +203,19 @@ def endpoint_command(config, role, binary):
                     "--video", str(ROOT / config["video"]),
                     "--duration", f"{config['duration_seconds']}s",
                     "--initial-bitrate", str(config["initial_bitrate_bps"])]
+        if config["controller"] == "prague" and "prague_pacing_backend" in config:
+            command += ["--prague-pacing-backend", config["prague_pacing_backend"]]
     return command
+
+
+def verify_pacing_capability(binary, config, role):
+    """Reject an explicit scheduler option unsupported by an older sender binary."""
+    if role != "sender" or config["controller"] != "prague" or "prague_pacing_backend" not in config:
+        return
+    probe = subprocess.run([str(binary), "--help"], capture_output=True, text=True,
+                           timeout=8, check=False)
+    if probe.returncode or "-prague-pacing-backend" not in probe.stdout + probe.stderr:
+        raise ValueError("sender binary lacks Prague pacing selection; rebuild before starting capture")
 
 
 def verify_forks(build_info):
@@ -247,6 +264,7 @@ def run_peer(config, args):
         raise ValueError("endpoint binary missing; first run bash scripts/build.sh")
     build_info = capture(["go", "version", "-m", str(binary)])
     dependencies = verify_forks(build_info)
+    verify_pacing_capability(binary, config, args.role)
     checks = doctor(config, args.role)
     command = endpoint_command(config, args.role, binary)
     clip_hash = sha256(ROOT / config["video"]) if args.role == "sender" else None
@@ -267,6 +285,7 @@ def run_peer(config, args):
                 "recording": {"directory": "recording", "trace": "recording/session-trace.jsonl",
                               "sdp": "Exact *.raw.sdp and credential-redacted *.sdp; private local artifacts"},
                 "capabilities": {"prague": config["controller"] == "prague", "ecn": config["controller"] == "prague"},
+                "pacing_backend_requested": config.get("prague_pacing_backend", "auto") if config["controller"] == "prague" and args.role == "sender" else None,
                 "measurement_limits": {"adaptive_encoder": False,
                                        "queue_delay_ms": None, "encoder_target_bps": None}}
     metadata_path = folder / "metadata.json"
@@ -328,6 +347,7 @@ def main():
             print("Diagram values are unverified. Confirm the path and active qdisc with the operator.")
             return 0
         if args.action == "doctor":
+            verify_pacing_capability((ROOT / args.binary).resolve(), config, args.role)
             print(json.dumps(doctor(config, args.role), indent=2))
             return 0
         return run_peer(config, args)

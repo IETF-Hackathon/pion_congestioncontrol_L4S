@@ -1,0 +1,4 @@
+condition,trials,monitor_frame_mbps,median_transit_ms,p99_transit_ms
+New Pion fresh repeat,1,14.036,10.633,12.714
+Prior New Pion,3,13.097333333333333,10.452,13.236333333333334
+Saved GCC,3,18.342666666666666,21.195666666666668,100.52766666666666

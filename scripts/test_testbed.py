@@ -97,6 +97,28 @@ class LabGuardTests(unittest.TestCase):
             with self.subTest(info=bad), self.assertRaises(ValueError):
                 testbed.verify_forks(bad)
 
+    def test_pacing_backend_and_old_binary_guard(self):
+        """Require valid sender-only selection and reject an incompatible binary early."""
+        config = config_fixture()
+        config.update(controller="prague", prague_pacing_backend="linux-timerfd")
+        config = validated(config)
+        sender = testbed.endpoint_command(config, "sender", Path("/tmp/pion-l4s"))
+        receiver = testbed.endpoint_command(config, "receiver", Path("/tmp/pion-l4s"))
+        self.assertEqual(sender[sender.index("--prague-pacing-backend") + 1], "linux-timerfd")
+        self.assertNotIn("--prague-pacing-backend", receiver)
+        with mock.patch.object(testbed.subprocess, "run") as probe:
+            probe.return_value = mock.Mock(returncode=0, stdout="", stderr="old binary help")
+            with self.assertRaisesRegex(ValueError, "rebuild"):
+                testbed.verify_pacing_capability(Path("/tmp/pion-l4s"), config, "sender")
+            probe.return_value.stderr = "-prague-pacing-backend string"
+            testbed.verify_pacing_capability(Path("/tmp/pion-l4s"), config, "sender")
+        config["prague_pacing_backend"] = "unsupported"
+        with self.assertRaises(ValueError):
+            validated(config)
+        config.update(controller="gcc", prague_pacing_backend="linux-timerfd")
+        with self.assertRaises(ValueError):
+            validated(config)
+
     def test_receiver_must_be_unused_and_match_feedback(self):
         """Catch a second session, wrong peer address, or CCFB/TWCC mismatch."""
         config = config_fixture()

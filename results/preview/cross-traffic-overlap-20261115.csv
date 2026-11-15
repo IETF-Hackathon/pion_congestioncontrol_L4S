@@ -1,0 +1,8 @@
+condition,trial,background_ingress_mbps,background_delivered_mbps,background_ingress_peak_1s_mbps,monitor_ui_ingress_mbps,experiment_control_ingress_mbps,background_packets_matched_both_sides,result_url
+GCC baseline,1,0.7043552,0.69208512,3.068792,0.02181696,0.00627264,4334,http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r1_2026_11_15_19_21/
+GCC baseline,2,0.6567622399999999,0.65387264,1.540344,0.02089024,0.00608384,3115,http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r2_2026_11_15_19_22/
+GCC baseline,3,0.37025632,0.36943744,1.746456,0.021793279999999998,0.006062720000000001,2391,http://lld-black4.local/data/pion-gcc-baseline-25m-20261115T181607Z-r3_2026_11_15_19_24/
+Prague pacing v2,1,0.71367936,0.7165014399999999,5.015176,0.0227328,0.01974656,2915,http://lld-black4.local/data/pion-prague-pacing-v2-25m-20261115T190910Z-r1_2026_11_15_20_11/
+Prague pacing v2,2,0.41630496,0.41647392,1.92308,0.0227328,0.0202464,4082,http://lld-black4.local/data/pion-prague-pacing-v2-25m-20261115T190910Z-r2_2026_11_15_20_13/
+Prague pacing v2,3,0.6702739200000001,0.6701894399999999,3.475856,0.0227328,0.02020608,4496,http://lld-black4.local/data/pion-prague-pacing-v2-25m-20261115T190910Z-r3_2026_11_15_20_14/
+Latest Prague repeat,1,0.15944032,0.15505760000000002,1.30932,0.02270976,0.019527040000000002,695,http://lld-black4.local/data/new-pion-v2-repeat-25m-20261115T193712Z_2026_11_15_20_37/
