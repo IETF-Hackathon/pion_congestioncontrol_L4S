@@ -10,14 +10,11 @@ Use `/Users/albisht/ietf/pion-l4s-interop` as the working repository. All build 
 
 ## Status
 
-A runnable Pion sender/receiver supports GCC and an experimental UDP-Prague controller. Prague includes synchronous pacing, IPv4 ECT(1) marking, received ECN metadata, and ECN-aware RFC 8888 feedback. A 30-second physical two-host check received 2,078 RTP packets (2,076 ECT(1), 2 CE); the sender's Prague state recorded both CE marks. This establishes endpoint transport and ECN feedback. Bottleneck path/settings evidence, sustained congestion measurements, source adaptation and a matched physical GCC baseline remain pending. See [Prague integration and testbed status](docs/pion-l4s-interop/prague.md).
+A runnable Pion sender/receiver supports GCC and an experimental UDP-Prague controller. Prague includes synchronous pacing, IPv4 ECT(1) marking, received ECN metadata, ECN-aware RFC 8888 feedback, a cgo bridge to the UDP-Prague core, and controller rate/window updates. A physical Linux-to-Mac call established the complete endpoint loop: ECT(1) media reached the receiver, CE observations returned in CCFB, and the sender recorded them in Prague state.
 
-The [run preview in the project page](index.html#preview) shows the actual saved
-local GCC counters, technology/version summary, and next testbed commands. The
-[recorded snapshot](results/preview/local-gcc-20261114.json) contains the underlying
-samples and provenance. **GCC ran locally; the GCC baseline through `lld-black4`
-has not been run.** The experimental results table remains reserved for measured
-POC results.
+A later [four-rate physical sweep](results/preview/prague-rate-sweep-20261114.json) ran nominal 0.5, 14.2, 24.0, and 33.8 Mbps VP8 sources with a separate two-sided `lld-black4` capture for each run. Monitor rates were 0.537, 9.053, 9.111, and 9.025 Mbps, with 2, 0, 25, and 165 CE marks respectively. The captures verify the media flow across the monitor's two interfaces. They do **not** yet establish the active qdisc/capacity configuration, pure queue delay, a complete high-load Prague response, or the cause of the roughly 9 Mbps delivery ceiling. The fixed prerecorded source has no encoder adaptation, background traffic was uncontrolled, and the final high-rate sender snapshot missed most of a late CE burst.
+
+See the [Prague implementation status](docs/pion-l4s-interop/prague.md), [runtime component map](docs/pion-l4s-interop/components.md), and [recorded result index](results/preview/README.md). A GCC baseline and one exploratory GCC-versus-Prague comparison have run. The comparison used the same prerecorded source and duration, but lacked repetitions, verified matching bottleneck settings, and controlled cross traffic; it is not a controlled performance comparison. See the [comparison report](results/preview/pion-prague-vs-gcc-25m-20261115T172333Z.md). Historical local GCC/CCFB and GCC/TWCC transport checks remain in the [local snapshot](results/preview/local-gcc-20261114.json).
 
 ## Runnable starter
 
@@ -44,6 +41,17 @@ The [current setup overlay](docs/images/pion-current-lab-setup.md) shows the ins
 
 ![Current physical Pion Prague setup and remaining work](docs/images/pion-current-lab-setup.png)
 
+### Latest captured Prague sweep
+
+| Nominal source | Receiver RTP payload | Monitor UDP frames | Receiver/monitor CE | Interpretation |
+| ---: | ---: | ---: | ---: | --- |
+| 0.50 Mbps | 0.496 Mbps | 0.537 Mbps | 2 | Light-load endpoint and CE-feedback check. |
+| 14.17 Mbps | 8.497 Mbps | 9.053 Mbps | 0 | Offered source did not reach its nominal rate on the network. |
+| 23.95 Mbps | 8.531 Mbps | 9.111 Mbps | 25 | CE was observed at the receiver and in the last sender sample. |
+| 33.83 Mbps | 8.408 Mbps | 9.025 Mbps | 165 | Most CE arrived after the last sender snapshot; 15 forward UDP drops were reported by the monitor. |
+
+The [comparison chart](results/preview/prague-rate-sweep-20261114.png), [CSV](results/preview/prague-rate-sweep-20261114.csv), and [full JSON record](results/preview/prague-rate-sweep-20261114.json) preserve the run IDs, artifact hashes, capture links, measurement definitions, shutdown warnings, and missing metrics. Source rate, RTP payload rate, and monitor frame rate use different byte accounting and time windows. These runs are implementation evidence, not a completed performance comparison.
+
 A [separate overlay shows the verified one-Mac local VM loop](docs/images/pion-local-vm-loop.md):
 macOS sender on `bridge100` → Linux VM receiver on `lima0`. That call received
 437 ECT(1) RTP packets and returned CCFB feedback without traversing lld-black4.
@@ -64,21 +72,67 @@ Server-side Pion sender -> servers switch -> lld-black4 -> laptop Pion receiver
                        <- RTCP feedback across the same path <-
 ```
 
-For a new setup, build the same source on both hosts, copy `testbed/lld-black4.example.json` to `testbed/local.json`, and fill both peers' assigned IPv4 addresses and Ethernet interface names. Select `controller: prague` and `feedback: ccfb` for the current Prague check, or explicitly select GCC for a separate baseline. Use an unused run ID for each call:
+### Sender and receiver commands
+
+These commands use the installed Linux sender at `192.168.1.216` (`enp1s0`) and Mac receiver at `192.168.1.79` (`en7`). Recheck those assigned addresses before running. For a new setup, copy `testbed/lld-black4.example.json` to `testbed/local.json`, fill both endpoint sections, and place the same edited config on both hosts. Preserve the existing lab config when rerunning.
+
+**Prepare before starting a capture.** Put the same source revision on both hosts and run `bash scripts/build.sh` in each checkout. On the installed Linux sender, add its private Go toolchain first with `export PATH="$HOME/.local/share/pion-toolchains/go1.27.4/bin:$PATH"`. The sender must have the file named by `video`; run `bash scripts/make-media.sh` only if you need to create the default `media/sample.ivf`. It refuses to overwrite an existing clip.
+
+**Choose the controller in `testbed/local.json` on both hosts:**
+
+| Experiment | `controller` | `feedback` | Example run ID |
+| --- | --- | --- | --- |
+| With Prague | `prague` | `ccfb` | `prague-compare-01` |
+| Without Prague, using GCC | `gcc` | `ccfb` | `gcc-compare-01` |
+
+The run ID names the saved artifacts; it does **not** select the controller. There is no fixed-rate/no-congestion-control mode yet. Keep the same `video`, `duration_seconds`, and `initial_bitrate_bps` for the matched runs; `initial_bitrate_bps` is a starting controller target, not an encoder or guaranteed wire rate. The current light-load config uses 30 seconds and `media/sample.ivf` at approximately 500 kbps.
+
+**With Prague — start the receiver on the Mac and leave it running:**
 
 ```sh
-# Laptop: checks its lab interface/address/route, then receives until Ctrl+C.
+cd /Users/albisht/ietf/pion-l4s-interop
 python3 scripts/testbed.py plan
 python3 scripts/testbed.py doctor --role receiver
-python3 scripts/testbed.py run --role receiver --run-id prague-02
-
-# Separate server-side host, once the laptop receiver is running:
-bash scripts/make-media.sh
-python3 scripts/testbed.py doctor --role sender
-python3 scripts/testbed.py run --role sender --run-id prague-02
+python3 scripts/testbed.py run --role receiver --run-id prague-compare-01
 ```
 
-The helper verifies the compiled Altanai replacements, filters ICE to the configured interface/IP and UDP ports, and records per-role logs, build details, config, and hashes under `results/raw/`. It never overwrites an existing run. Allow TCP 8080 on the receiver and UDP 50000–50100 on both peers, or configure operator-approved ports. Scripts inspect the local network; they do not configure lab gear, routes, host addresses, or firewalls. Endpoint checks cannot prove passage through a transparent bottleneck: confirm the flow in operator counters/captures.
+**In a separate terminal, connect to the sender and check readiness:**
+
+```sh
+ssh -F /dev/null selabs@192.168.1.216
+cd /home/selabs/pion-l4s-interop
+./run-testbed.sh doctor --role sender
+```
+
+Start a uniquely named, bounded capture in the [lld-black4 UI](http://lld-black4.local/ui/) and confirm it is actively recording. Then, in that SSH session, launch the sender:
+
+```sh
+./run-testbed.sh run --role sender --run-id prague-compare-01
+```
+
+The installed server's `run-testbed.sh` supplies its private Go toolchain and invokes `scripts/testbed.py`. On another sender with Go already on `PATH`, use `python3 scripts/testbed.py` in place of `./run-testbed.sh`. Both peers must use the same config and run ID. After the sender finishes, stop the receiver with Ctrl+C and wait for monitor analysis.
+
+**Without Prague — repeat with GCC.** Set `controller` to `gcc` in both configs, keep `feedback` as `ccfb`, and start a fresh receiver on the Mac:
+
+```sh
+cd /Users/albisht/ietf/pion-l4s-interop
+python3 scripts/testbed.py plan
+python3 scripts/testbed.py doctor --role receiver
+python3 scripts/testbed.py run --role receiver --run-id gcc-compare-01
+```
+
+In the sender's SSH session:
+
+```sh
+cd /home/selabs/pion-l4s-interop
+./run-testbed.sh doctor --role sender
+# Start a separate lld-black4 capture and confirm it is active before continuing.
+./run-testbed.sh run --role sender --run-id gcc-compare-01
+```
+
+Use a new run ID and a fresh receiver for every repeat. The helper verifies the compiled Altanai replacements, filters ICE to the configured interface/IP and UDP ports, and records logs, build details, config, hashes, and session recordings under `results/raw/<run-id>/receiver/` on the Mac and `results/raw/<run-id>/sender/` on the server. It never overwrites an existing run. `testbed.py` does not start the bottleneck capture automatically.
+
+Allow TCP 8080 on the receiver and UDP 50000–50100 on both peers, or configure operator-approved ports. Scripts inspect the local network; they do not configure lab gear, routes, host addresses, or firewalls. Endpoint checks cannot prove passage through a transparent bottleneck: confirm the flow in monitor captures. Prague enables the application's ECT(1)/CE path; GCC does not, so this compares the complete transport modes. The roughly 9 Mbps Prague delivery ceiling remains unresolved and limits capacity conclusions.
 
 ## POC objective
 
@@ -108,17 +162,20 @@ The supplied topology labels `lld-black4` as **20 Mbps with 10 ms added in each 
 
 See [the Pion-to-UDP-Prague comparison](docs/pion-l4s-interop/udp-prague-pion-mapping.md) for how the example sender and receiver map to the planned WebRTC endpoints, and which feedback and ECN adaptations are required.
 
-Track the implementation work in [todo/README.md](todo/README.md). The WebRTC module is pinned to `v4.2.26` and interceptor to `v0.1.51`.
+The WebRTC module is pinned to `v4.2.26` and interceptor to `v0.1.51`.
 
-## Implementation roadmap
+## Implementation status
 
-- Pion sender and receiver, starting from [Pion's example applications](https://github.com/pion/example-webrtc-applications).
-- RTP/RTCP processing using [`pion/interceptor`](https://github.com/pion/interceptor).
-- Explicitly configured optional Pion GCC baseline, with bitrate adaptation connected to the source and pacer.
-- [`UDP-Prague`](https://github.com/L4steam/udp_prague) integration, including packet accounting and a feedback adapter.
-- ECT(1) marking and CE observation through the outer ICE/UDP transport, preserving per-packet metadata through the receiver path.
-- RFC 8888 feedback and the required ECN negotiation and validation. Feedback-format support alone does not establish end-to-end ECN support.
-- Endpoint logs and operator-provided bottleneck telemetry for the comparison metrics.
+- [x] Pion sender and receiver with direct IPv4 ICE/UDP, HTTP signaling, VP8 RTP, and structured logs.
+- [x] Explicit GCC controller and pacer for the baseline mode.
+- [x] UDP-Prague core, Go/cgo adapter, RTP packet accounting, synchronous pacing, and byte-window enforcement.
+- [x] Outer-IP ECT(1) marking for media, received ECN metadata, authenticated RTP correlation, and CE-aware RFC 8888 CCFB.
+- [x] Physical Linux-to-Mac media/feedback runs and paired `lld-black4` capture artifacts.
+- [x] Local SDP and controller-feedback recording with redacted shareable artifacts.
+- [ ] Live encoder/source adaptation driven by the selected controller.
+- [ ] Independent confirmation of the active qdisc, shaping capacity, and marking configuration.
+- [ ] Controlled matched physical GCC and Prague runs with verified bottleneck settings and cross traffic.
+- [ ] Pure queue delay, raw RTT variation, fairness, and negative-case validation.
 
 ## Pion L4S integration TODOs
 
@@ -127,8 +184,8 @@ These tasks track the bridge from the standalone [UDP-Prague sender/receiver](ht
 ### TODO 1 — Pin and inspect the interfaces
 
 - [x] Select and record the Pion WebRTC, ICE, interceptor, and UDP-Prague revisions.
-- [ ] Confirm which RTCP RFC 8888 report format is negotiated and what packet identity, timing, and ECN information it carries.
-- [ ] Map the selected report fields to the exact `PragueCC` API calls and document units, counter semantics, and wrap behavior.
+- [x] Confirm which RTCP RFC 8888 report format is negotiated and what packet identity, timing, and ECN information it carries.
+- [x] Map the selected report fields to the exact `PragueCC` API calls and document units, counter semantics, and wrap behavior.
 
 **Done when:** a short interface note names the versions and describes the sender and receiver data flow field by field.
 
@@ -152,27 +209,30 @@ These tasks track the bridge from the standalone [UDP-Prague sender/receiver](ht
 
 ### TODO 4 — Expose outer-IP ECN
 
-- [x] Mark outgoing ICE/UDP packets ECT(1) for the Prague run.
+- [x] Mark outgoing SRTP media packets ECT(1) for the Prague run while keeping ICE control traffic Non-ECT.
 - [x] Read the ECN field on received outer IP packets and expose CE observations to receiver feedback generation.
 - [x] Detect and report bleaching or invalid ECN behavior.
-- [ ] Verify the behavior on the selected operating system and exact ICE/UDP path.
+- [x] Verify the behavior on the selected Linux-to-macOS ICE/UDP path.
 
 **Done when:** packet captures show ECT(1) before the bottleneck, CE after marking, and matching CE information in receiver feedback.
 
 ### TODO 5 — Prove the closed loop
 
-- [ ] Correlate packet captures, receiver reports, Prague state, pacer output, and encoder/source target.
-- [ ] Exercise CE marking, loss, reordering, and CE bleaching or invalid-ECN cases.
-- [ ] Confirm the sender responds to reported congestion and stops relying on L4S marking when feedback reports an ECN error.
+- [x] Correlate packet captures, receiver feedback, Prague state, and controller rate changes; the November 15 run records 324 CE marks and 13 losses reaching sender state as the rate falls.
+- [ ] Correlate the applied pacer rate and adaptive encoder/source target with those events; the source is fixed prerecorded media and its target is not available.
+- [x] Observe sender rate reduction after reported congestion in the physical run (CE and loss both occurred).
+- [ ] Exercise reordering and CE bleaching/invalid-ECN cases, and verify fallback when feedback reports an ECN error.
 
 **Done when:** a timestamped trace follows an observed bottleneck mark through receiver feedback into Prague's state and applied sending rate; negative cases are distinguishable.
 
 ### TODO 6 — Run matched comparisons
 
-- [ ] Run explicitly configured GCC and Prague using the same media source, capacity, delay, duration, and cross traffic.
-- [ ] Record queue delay, RTT variation, CE count, loss, goodput, and encoder/source target rate.
+- [x] Run an exploratory GCC and Prague comparison using the same media file and 30-second duration.
+- [ ] Repeat with verified identical capacity and delay, controlled cross traffic, and multiple runs.
+- [x] Record transit delay, CE count, packet loss, and delivered media rate for the exploratory comparison.
+- [ ] Measure pure queue delay and raw RTT variation, and correlate an adaptive encoder/source target rate.
 - [ ] Repeat with a classic competing flow and diagnostic cases such as ECN bleaching or a non-L4S queue.
-- [ ] Preserve the run configuration and endpoint/network logs with each result.
+- [x] Preserve the run configuration and endpoint/network logs with each result.
 
 **Done when:** the paired runs are reproducible from recorded configuration and all listed measurements can be traced to endpoint or bottleneck evidence.
 

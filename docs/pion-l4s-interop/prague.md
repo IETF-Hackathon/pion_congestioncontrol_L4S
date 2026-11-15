@@ -105,6 +105,10 @@ Non-ECT/ECT(0) feedback, two seconds without fresh feedback, missing ECN metadat
 or history exhaustion ends the media run with an error. This integration stops
 on ECN failure instead of dynamically switching controllers in the same session.
 
+## Proposed pacing scheduler
+
+The [scheduler design](pacing-scheduler-design.md) records the current approximately 9 Mbps observation and proposes bounded elapsed-time pacing with a precise Linux wait backend. It includes the current/proposed comparison, burst/window and cancellation rules, measurement points, and the acceptance gate. The runtime change and its performance verification remain pending.
+
 ## Build and local verification
 
 Install Go 1.24+, a C++11 compiler and cgo support. macOS uses Clang/libc++;
