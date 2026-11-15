@@ -21,6 +21,10 @@ POC results.
 
 ## Runnable starter
 
+New calls can [record SDP and Pion feedback handling](docs/pion-l4s-interop/recordings.md).
+The testbed and local-smoke runners enable private session recordings automatically;
+review the retained redacted SDP and controller trace from the new local validation.
+
 ```sh
 bash scripts/build.sh
 ./bin/pion-l4s --help
@@ -31,6 +35,8 @@ See [build and fork instructions](docs/pion-l4s-interop/build-system.md) for the
 The build selects [`altanai/interceptor`](https://github.com/altanai/interceptor) at `v0.1.51` and [`altanai/ice`](https://github.com/altanai/ice) at `v4.4.8` through versioned `go.mod` replacements. Keep the original Pion import/module paths. The forks currently contain the existing controller/transport implementation; they do not add ECN by themselves.
 
 ## Testbed scripts
+
+Use the Codex skill [`$pion-prague-testbed`](.agents/skills/pion-prague-testbed/SKILL.md) to rerun with a bottleneck recording. It starts one bounded lld-black4 capture, confirms capture is active before sending media, then correlates the new dashboard results with both endpoint logs. `testbed.py` by itself does not start a monitor capture.
 
 For a separate sender laptop, follow the [complete two-laptop procedure](docs/pion-l4s-interop/separate-laptop.md),
 including copying the current implementation, sharing config and verifying CE feedback.

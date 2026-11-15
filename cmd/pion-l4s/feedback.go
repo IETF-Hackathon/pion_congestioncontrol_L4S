@@ -12,13 +12,14 @@ import (
 )
 
 type ecnFeedbackFactory struct {
-	socket *ecnSocket
-	report func(error)
+	socket    *ecnSocket
+	report    func(error)
+	recording *sessionRecorder
 }
 
 // NewInterceptor allocates feedback state per PeerConnection.
 func (f *ecnFeedbackFactory) NewInterceptor(_ string) (interceptor.Interceptor, error) {
-	return &ecnFeedback{socket: f.socket, report: f.report, recorder: ccfb.NewRecorder(), done: make(chan struct{})}, nil
+	return &ecnFeedback{socket: f.socket, report: f.report, recorder: ccfb.NewRecorder(), done: make(chan struct{}), recording: f.recording}, nil
 }
 
 type ecnFeedback struct {
@@ -31,6 +32,7 @@ type ecnFeedback struct {
 	wg        sync.WaitGroup
 	once      sync.Once
 	closeOnce sync.Once
+	recording *sessionRecorder
 }
 
 // BindRemoteStream records only authenticated RTP together with its socket ECN.
@@ -82,7 +84,16 @@ func (f *ecnFeedback) BindRTCPWriter(writer interceptor.RTCPWriter) interceptor.
 					if count == 0 {
 						continue
 					}
+					if err := f.recording.event("ccfb_generated", map[string]any{"packet": report, "metric_count": count,
+						"path": "authenticated RTP -> socket ECN correlation -> Pion ccfb.Recorder.BuildReport"}); err != nil {
+						f.report(err)
+						return
+					}
 					if _, err := writer.Write([]rtcp.Packet{report}, nil); err != nil {
+						f.report(err)
+						return
+					}
+					if err := f.recording.event("ccfb_written", map[string]any{"report_timestamp": report.ReportTimestamp, "metric_count": count}); err != nil {
 						f.report(err)
 						return
 					}

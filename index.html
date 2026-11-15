@@ -299,7 +299,8 @@
               <text x="25" y="248" class="small">Feedback carries delivery and CE signals</text>
             </svg>
           </div>
-          <p class="caption">Critical integration boundary: RTP interceptors can process RTP/RTCP, but ECT(1) marking and CE observation happen on the outer IP packet in the ICE/UDP transport.</p>
+          <p class="caption">Critical integration boundary: RTP interceptors can process RTP/RTCP, but ECT(1) marking and CE observation happen on the outer IP packet in the ICE/UDP transport. See the <a href="docs/pion-l4s-interop/prague.md#sequence-diagram">Mermaid sequence diagram</a> for the current physical Prague call.</p>
+          <details style="margin-top:16px"><summary style="cursor:pointer;font-weight:700">Preview the Prague sequence diagram</summary><img src="docs/images/pion-prague-sequence.png" alt="Sequence of receiver readiness, SDP offer/answer, ICE and DTLS setup, ECT(1) media, ECN observation, RFC 8888 feedback and Prague updates; bottleneck path validation remains pending." style="display:block;width:100%;height:auto;margin-top:14px" loading="lazy"></details>
         </div>
         <div class="panel body-copy" style="margin-top:16px">
           <h3>What changes when UDP-Prague is carried by Pion?</h3>
@@ -358,6 +359,15 @@ update window, pacing rate, burst allowance, and media target</pre>
           <h3>What is still missing here</h3>
           <p>The experimental Prague mode now marks SRTP data ECT(1), reads socket ECN metadata, returns ECN-aware RFC 8888 reports, and feeds the pinned <code>PragueCC</code> core. A synchronous pacer applies its rate and byte-window outputs. Local checks pass, and a physical two-host call recorded two CE marks at the receiver and in sender Prague state. Independent bottleneck evidence, sustained congestion validation, adaptive encoding and complete metrics remain pending.</p>
         </div>
+        <details class="panel body-copy" style="margin-top:16px">
+          <summary style="cursor:pointer;font-weight:700">Recorded SDP and actual Pion feedback handling</summary>
+          <p style="margin-top:14px">A new six-second <strong>local loopback</strong> Prague call retained exact signaling and feedback traces. The sender's offer and receiver's answer matched the descriptions received by the opposite peer. The saved answer includes these advertised VP8 feedback lines:</p>
+          <pre style="overflow:auto"><code>a=rtpmap:96 VP8/90000
+a=rtcp-fb:96 ack ccfb</code></pre>
+          <p>Pion's <code>cc.BindRTCPReader</code> parsed RTCP and invoked the selected controller's <code>WriteRTCP</code>. All <strong>226 receiver-generated CCFB reports</strong> matched the sender's decoded report bodies; six additional Receiver Reports passed through the handler. One recorded CCFB dispatch changed Prague's received counter <strong>0 → 2</strong> and in-flight bytes <strong>2,488 → 0</strong>, while CE stayed zero. The receiver's last sample counted 352 ECT(1) RTP packets.</p>
+          <p>Inspect the <a href="results/preview/session-recording-local-20261114/offer.sdp">redacted offer</a>, <a href="results/preview/session-recording-local-20261114/answer.sdp">redacted answer</a>, <a href="results/preview/session-recording-local-20261114/feedback-example.json">actual controller-dispatch example</a>, and <a href="results/preview/session-recording-local-20261114/summary.json">recording summary</a>. Exact SDP and full traces remain in ignored, private run artifacts. General SDP ECN negotiation is still unimplemented; this paired application uses its explicit health check.</p>
+          <p>The older physical call's two CE observations remain separate evidence. That call did not retain SDP; these new local artifacts do not reconstruct it. A fresh physical recording needs updated source on the server and working SSH access. See <a href="docs/pion-l4s-interop/recordings.md">recording instructions and limitations</a>.</p>
+        </details>
         <p class="source-note">Technical references: <a href="https://www.rfc-editor.org/rfc/rfc9331.html">RFC 9331 L4S ECN requirements</a>, the <a href="https://datatracker.ietf.org/doc/html/draft-briscoe-iccrg-prague-congestion-control-04">Prague congestion-control specification</a>, and the <a href="https://github.com/L4steam/udp_prague">UDP-Prague reference implementation</a>.</p>
       </section>
 
